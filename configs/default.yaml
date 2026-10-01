@@ -1,0 +1,93 @@
+project_name: denoise_ecg_bmelab
+seed: 42
+output_root: d:\SPARC Lab\Denoise_ECG_BMELaB\denoise_runs
+data:
+  dataset_root: d:\SPARC Lab\Denoise_ECG_BMELaB\data
+  processed_root: d:\SPARC Lab\Denoise_ECG_BMELaB\data\processed
+  mitdb_dir: MITDB
+  nstdb_dir: NSTDB
+  fs: 360
+  channel_idx: 0
+  segment_length: 8192
+  overlap_ratio: 0.5
+  bandpass_low: 0.67
+  bandpass_high: 100.0
+  energy_percentile_low: 5
+  energy_percentile_high: 95
+  wavelet: haar
+  noise_train_snrs:
+  - -5
+  - -3
+  - -1
+  - 1
+  - 3
+  - 5
+  noise_test_snrs:
+  - -10
+  - -7
+  - -5
+  - -3
+  - 0
+  - 1
+  - 3
+  - 5
+  - 7
+  - 10
+  noise_groups:
+  - single
+  - double
+  - triple
+train:
+  epochs: 50
+  batch_size: 16
+  num_workers: 0
+  lr: 0.001
+  weight_decay: 0.0
+  device: cuda
+  patience: 10
+loss:
+  name: mse
+  alpha: 1.0
+  haar_lambda: 0.05
+model:
+  name: haar_sym_lite
+  base: 32
+  expansion: 4
+  mid_depth: 3
+  se_reduction: 8
+experiment:
+  alpha_values:
+  - 0
+  - 0.2
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.8
+  - 1.0
+  mid_depth_values:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  wavelets:
+  - haar
+  - db2
+  - db4
+  - sym4
+  - coif1
+  - bior2.2
+misc:
+  save_feature_maps: false
+  feature_map_max_channels: 16
+classification:
+  beat_len: 256
+  n_classes: 3
+  n_leads: 1
+  n_context: 1
+  z_norm: true
+  auto_val: false
+  val_records:
+  - '223'
+  - '118'
+  - '116'

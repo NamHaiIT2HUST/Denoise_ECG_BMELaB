@@ -1,0 +1,13 @@
+numpy>=1.24
+scipy>=1.10
+pandas>=2.0
+matplotlib>=3.7
+pywavelets>=1.5
+wfdb>=4.1
+PyYAML>=6.0
+tqdm>=4.66
+torch>=2.1
+torchvision>=0.16
+pennylane>=0.35   # cho nhanh phan loai luong tu (VQC)
+umap-learn>=0.5   # cho hinh UMAP trong paper
+neurokit2>=0.2    # delineation P/QRS/T, dung cho danh gia QT/QRS interval error (ROADMAP.md #3)

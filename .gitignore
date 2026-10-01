@@ -1,0 +1,28 @@
+# Environments
+venv/
+env/
+.env/
+
+# Data
+data/
+
+# Model Checkpoints & Runs
+denoise_runs/
+runs_cls/
+runs/
+*.pt
+*.pth
+*.ckpt
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
