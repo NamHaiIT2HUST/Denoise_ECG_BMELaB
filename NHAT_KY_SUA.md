@@ -102,15 +102,4 @@ Trong tài liệu ban đầu (`CLASSIFICATION.md`), phần đánh giá khi Khôn
 2. [`scripts/train_5_seeds_cls.sh`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/scripts/train_5_seeds_cls.sh): Tự động huấn luyện 5 seeds có khử nhiễu và chạy gộp Soft-voting Ensemble.
 3. [`scripts/run_final_pipeline.sh`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/scripts/run_final_pipeline.sh): Pipeline tự động hóa từ khâu kiểm định Denoise đến huấn luyện và ensemble phân loại.
 
----
 
-## 6. HỆ THỐNG TÀI LIỆU VÀ QUẢN LÝ DỰ ÁN MỚI
-
-Trước đây, dự án chỉ có các file ghi chú kỹ thuật phân mảnh (`README.md`, `ROADMAP.md`, `CLASSIFICATION.md`). Hiện tại dự án đã có bộ tài liệu học thuật bài bản phục vụ trực tiếp cho việc viết Paper:
-
-1. **[`FINAL_PROJECT_REPORT.md`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/FINAL_PROJECT_REPORT.md):** Báo cáo tối ưu hóa dự án, tổng kết các cải tiến kiến trúc và phát hiện về hàm Loss.
-2. **[`FINAL_PAPER_REPORT.md`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/FINAL_PAPER_REPORT.md):** Báo cáo phân tích chuyên sâu 4 thực nghiệm Ablation, giải thích hiện tượng sụt giảm F1 khi dùng MSE và luận điểm chuẩn Q1/Q2.
-3. **[`TONG_HOP_TOAN_BO_KET_QUA.md`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/TONG_HOP_TOAN_BO_KET_QUA.md):** Bản tổng hợp số liệu toàn diện từ SNR, PRD, RMSE, độ trễ CPU đến F1-Score phân loại nhịp tim và ma trận nhầm lẫn.
-4. **[`MO_TA_CHI_TIET_HE_THONG_VA_SO_SANH.md`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/MO_TA_CHI_TIET_HE_THONG_VA_SO_SANH.md):** Bản đặc tả đầy đủ 5 mục cốt lõi: Dataset, Input, Xử lý ra sao, Output và So sánh Literature đối đầu với Mondéjar 2019, de Chazal 2004, DeepFilter 2024.
-5. **[`TONG_HOP_CAC_THAY_DOI_SO_VOI_BAN_DAU.md`](file:///d:/SPARC%20Lab/Denoise_ECG_BMELaB/TONG_HOP_CAC_THAY_DOI_SO_VOI_BAN_DAU.md):** Tài liệu này – ghi nhận toàn bộ quá trình cải tiến và tiến hóa của dự án.
-6. **Quản lý Git:** Thiết lập file `.gitignore` chuẩn, dọn dẹp các tệp rác giải phóng dung lượng, commit và đẩy đồng bộ toàn bộ mã nguồn lên GitHub [NamHaiIT2HUST/Denoise_ECG_BMELaB](https://github.com/NamHaiIT2HUST/Denoise_ECG_BMELaB.git).
