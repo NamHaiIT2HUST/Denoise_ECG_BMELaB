@@ -1,7 +1,7 @@
 # BÁO CÁO TỔNG HỢP TOÀN BỘ KẾT QUẢ DỰ ÁN
 ## Denoise_ECG_BMELaB: Khử nhiễu ECG Wavelet & Phân loại Nhịp tim Lai Lượng tử (QML)
 
-> **Mục tiêu công bố:** Tạp chí Quốc tế Q1/Q2 (Elsevier *Biomedical Signal Processing and Control* - BSPC hoặc *IEEE Journal of Biomedical and Health Informatics* - JBHI).  
+>
 > **Giao thức chuẩn:** Inter-patient DS1/DS2 (de Chazal 2004, AAMI EC57), MIT-BIH Arrhythmia Database + NSTDB Noise Database.
 
 ---
