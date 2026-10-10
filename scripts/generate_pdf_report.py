@@ -3,6 +3,7 @@
 generate_pdf_report.py
 Tao bao cao hoc thuat toan dien (Full Technical Report) duoi dang PDF
 su dung Microsoft Edge Headless engine voi day du du lieu, bang bieu va hinh anh 300 DPI.
+Toan bo ky hieu toan hoc duoc format chuan HTML/Unicode khong loi LaTeX.
 """
 
 import os
@@ -36,7 +37,7 @@ def build_html():
     b64_ablation = img_to_b64(FIG_DIR / 'fig6_ablation_f1_comparison.png')
     b64_pareto   = img_to_b64(FIG_DIR / 'fig7_model_complexity_pareto.png')
 
-    print("[2/3] Dang bien soan noi dung HTML hoc thuat chuan Q1/Q2...")
+    print("[2/3] Dang bien soan noi dung HTML hoc thuat chuan in an (Khong loi toan hoc)...")
     html_content = f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -48,7 +49,7 @@ def build_html():
     margin: 16mm 14mm 18mm 14mm;
     @bottom-center {{
       content: "Trang " counter(page);
-      font-size: 8pt;
+      font-size: 8.5pt;
       color: #666;
     }}
   }}
@@ -89,34 +90,22 @@ def build_html():
     color: #1f77b4;
     margin-top: 1em;
   }}
-  .header-box {{
-    background: #eef5fb;
-    border: 1px solid #c8e1f5;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    font-size: 9.5pt;
+  .math {{
+    font-family: 'Cambria Math', 'Times New Roman', Georgia, serif;
+    font-style: italic;
   }}
-  .header-box table {{
-    width: 100%;
-    border-collapse: collapse;
+  .math-block {{
+    text-align: center;
+    font-family: 'Cambria Math', 'Times New Roman', Georgia, serif;
+    font-size: 11pt;
+    color: #0b3954;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 6px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 4px;
   }}
-  .header-box td {{
-    padding: 3px 6px;
-    vertical-align: top;
-  }}
-  .badge {{
-    display: inline-block;
-    padding: 2px 7px;
-    font-size: 8pt;
-    font-weight: 600;
-    color: #fff;
-    background: #1f77b4;
-    border-radius: 3px;
-  }}
-  .badge-success {{ background: #2ca02c; }}
-  .badge-warning {{ background: #d62728; }}
-  .badge-purple  {{ background: #6f42c1; }}
   table.data-table {{
     width: 100%;
     border-collapse: collapse;
@@ -200,27 +189,9 @@ def build_html():
 
 <!-- TIÊU ĐỀ BÁO CÁO -->
 <h1>BÁO CÁO KỸ THUẬT TOÀN DIỆN DỰ ÁN DENOISE ECG & DETECTION 3 CLASS</h1>
-<p style="text-align: center; font-size: 10.5pt; color: #444; margin-top: -6px; margin-bottom: 14px;">
+<p style="text-align: center; font-size: 11pt; color: #444; margin-top: -6px; margin-bottom: 20px;">
   <b>Khử nhiễu Sóng Điện tâm đồ bằng Mạng Wavelet & Phân loại Nhịp tim Lai Lượng tử (Hybrid Quantum Machine Learning)</b>
 </p>
-
-<!-- KHỐI THÔNG TIN DỰ ÁN -->
-<div class="header-box">
-  <table>
-    <tr>
-      <td style="width: 50%;">
-        <b>Cơ quan / Phòng Thí nghiệm:</b> SPARC Lab & BME Lab - HUST<br>
-        <b>Thành viên thực hiện:</b> Nguyễn Đào Nam Hải & Đặng Trung Khánh<br>
-        <b>Mã nguồn GitHub:</b> <code>https://github.com/NamHaiIT2HUST/Denoise_ECG_BMELaB.git</code>
-      </td>
-      <td style="width: 50%;">
-        <b>Cơ sở dữ liệu chuẩn:</b> MIT-BIH Arrhythmia (MITDB) + Noise Stress (NSTDB)<br>
-        <b>Giao thức thử nghiệm:</b> Inter-patient DS1/DS2 (AAMI EC57 / de Chazal 2004)<br>
-        <b>Mục tiêu công bố:</b> Q1/Q2 (Elsevier <i>BSPC</i> / IEEE <i>JBHI</i>)
-      </td>
-    </tr>
-  </table>
-</div>
 
 <!-- MỤC 1: INPUT -->
 <h2>1. INPUT (ĐỊNH DẠNG & ĐẶC TRƯNG ĐẦU VÀO)</h2>
@@ -230,30 +201,30 @@ def build_html():
 
 <h3>1.1. Đầu vào cho Khâu Khử Nhiễu (Denoising Input)</h3>
 <ul>
-  <li><b>Định dạng tín hiệu:</b> Chuỗi thời gian 1D liên tục $x_{{noisy}} \in \mathbb{{R}}^{{1 \times 8192}}$ gồm <b>8.192 mẫu</b> (tương đương 22.75 giây ở tần số $f_s = 360\text{{ Hz}}$), được cắt với độ chồng lấp 50% (stride 4.096 mẫu).</li>
+  <li><b>Định dạng tín hiệu:</b> Chuỗi thời gian 1D liên tục <span class="math">x<sub>noisy</sub></span> gồm <b>8.192 mẫu</b> (tương đương 22.75 giây ở tần số lấy mẫu <span class="math">f<sub>s</sub> = 360 Hz</span>), được cắt với độ chồng lấp 50% (stride 4.096 mẫu).</li>
   <li><b>Thang đo vật lý:</b> Giữ nguyên <b>thang mV thô (Raw mV scale)</b>, tuyệt đối không chuẩn hóa Z-score hay Min-Max trước bộ khử nhiễu nhằm bảo toàn phân phối biên độ năng lượng thực tế của các phức bộ sóng tim.</li>
-  <li><b>Nguồn nhiễu sinh lý:</b> Tín hiệu sạch MIT-BIH được pha tạp có kiểm soát với 3 loại nhiễu từ MIT-BIH NSTDB:
+  <li><b>Nguồn nhiễu sinh lý:</b> Tín hiệu sạch từ MIT-BIH Arrhythmia Database (MITDB) được pha tạp có kiểm soát với 3 loại nhiễu từ MIT-BIH Noise Stress Test Database (NSTDB):
     <ul>
-      <li><code>BW</code> (Baseline Wander): Nhiễu dạt đường đẳng điện tần số thấp (0.05–1 Hz) do hô hấp và cử động ngực.</li>
+      <li><code>BW</code> (Baseline Wander): Nhiễu dạt đường đẳng điện tần số thấp (0.05 &minus; 1 Hz) do hô hấp và cử động ngực.</li>
       <li><code>MA</code> (Muscle Artifact): Nhiễu cơ vân tần số cao (lên tới 50 Hz) do rung cơ hoặc vận động.</li>
       <li><code>EM</code> (Electrode Motion): Nhiễu xê dịch điện cực tiếp xúc, gây méo cục bộ biên độ sóng đột ngột.</li>
     </ul>
   </li>
-  <li><b>Mức SNR pha tạp:</b> Huấn luyện ở 6 mức SNR ($-5, -3, -1, 1, 3, 5\text{{ dB}}$); Kiểm định độc lập ở 10 mức SNR ($-10, -7, -5, -3, 0, 1, 3, 5, 7, 10\text{{ dB}}$) trên 7 tổ hợp nhiễu đơn, đôi và ba.</li>
+  <li><b>Mức SNR pha tạp:</b> Huấn luyện ở 6 mức SNR (&minus;5, &minus;3, &minus;1, 1, 3, 5 dB); Kiểm định độc lập ở 10 mức SNR (&minus;10, &minus;7, &minus;5, &minus;3, 0, 1, 3, 5, 7, 10 dB) trên 7 tổ hợp nhiễu đơn, đôi và ba.</li>
 </ul>
 
 <h3>1.2. Đầu vào cho Khâu Phân Loại Nhịp Tim (Classification Input)</h3>
 <p>Mỗi nhịp tim độc lập được biểu diễn bằng <b>hai nhánh thông tin kết hợp</b>:</p>
 <ol>
-  <li><b>Nhánh Hình thái Sóng (Morphology Window):</b> Cửa sổ <b>256 mẫu</b> ($[-90, +165]$ mẫu quanh đỉnh R, tương đương ~0.71 giây), bao trọn sóng P, phức bộ QRS và sóng T. Nhịp tim sau khi qua bộ khử nhiễu sẽ được chuẩn hóa Z-Score thích ứng: $x_{{norm}} = (x - \mu)/\sigma$.</li>
+  <li><b>Nhánh Hình thái Sóng (Morphology Window):</b> Cửa sổ <b>256 mẫu</b> ([&minus;90, +165] mẫu quanh đỉnh R, tương đương ~0.71 giây), bao trọn sóng P, phức bộ QRS và sóng T. Nhịp tim sau khi qua bộ khử nhiễu được chuẩn hóa thích ứng Z-Score: <span class="math">x<sub>norm</sub> = (x &minus; &mu;) / &sigma;</span>.</li>
   <li><b>Nhánh Đặc trưng Nhịp học (RR Interval Features - 6 chiều):</b> Cung cấp bối cảnh nhịp thời gian để nhận diện các nhịp sớm (cực kỳ then chốt cho lớp ngoại tâm thu nhĩ S):
     <ul>
-      <li>$f_1 = \text{{pre\_RR}} / f_s$: Khoảng thời gian từ đỉnh R trước đến đỉnh R hiện tại (giây).</li>
-      <li>$f_2 = \text{{post\_RR}} / f_s$: Khoảng thời gian từ đỉnh R hiện tại đến đỉnh R kế tiếp (giây).</li>
-      <li>$f_3 = \text{{pre\_RR}} / \text{{local\_RR}}$: Tỷ lệ so với khoảng cách RR trung bình của 10 nhịp lân cận.</li>
-      <li>$f_4 = \text{{post\_RR}} / \text{{local\_RR}}$: Tỷ lệ khoảng sau so với nhịp cục bộ lân cận.</li>
-      <li>$f_5 = \text{{pre\_RR}} / \text{{global\_RR}}$: Tỷ lệ khoảng trước so với nhịp trung bình của cả bản ghi bệnh nhân.</li>
-      <li>$f_6 = \text{{post\_RR}} / \text{{global\_RR}}$: Tỷ lệ khoảng sau so với nhịp trung bình của cả bản ghi bệnh nhân.</li>
+      <li><span class="math">f<sub>1</sub> = pre_RR / f<sub>s</sub></span>: Khoảng thời gian từ đỉnh R trước đến đỉnh R hiện tại (giây).</li>
+      <li><span class="math">f<sub>2</sub> = post_RR / f<sub>s</sub></span>: Khoảng thời gian từ đỉnh R hiện tại đến đỉnh R kế tiếp (giây).</li>
+      <li><span class="math">f<sub>3</sub> = pre_RR / local_RR</span>: Tỷ lệ so với khoảng cách RR trung bình của 10 nhịp lân cận.</li>
+      <li><span class="math">f<sub>4</sub> = post_RR / local_RR</span>: Tỷ lệ khoảng sau so với nhịp cục bộ lân cận.</li>
+      <li><span class="math">f<sub>5</sub> = pre_RR / global_RR</span>: Tỷ lệ khoảng trước so với nhịp trung bình của cả bản ghi bệnh nhân.</li>
+      <li><span class="math">f<sub>6</sub> = post_RR / global_RR</span>: Tỷ lệ khoảng sau so với nhịp trung bình của cả bản ghi bệnh nhân.</li>
     </ul>
   </li>
 </ol>
@@ -275,26 +246,28 @@ def build_html():
 
 <h3>Bước 1: Tiền Xử Lý Dữ Liệu Thô (Preprocessing)</h3>
 <ul>
-  <li>Bộ lọc thông dải số tử (Butterworth 0.67 Hz – 100 Hz) loại bỏ trôi dạt DC quá mức và nhiễu cực cao tần.</li>
+  <li>Bộ lọc thông dải số tử (Butterworth 0.67 Hz &minus; 100 Hz) loại bỏ trôi dạt DC quá mức và nhiễu cực cao tần.</li>
   <li>Loại bỏ 4 bản ghi dùng máy tạo nhịp tim (102, 104, 107, 217) do hình thái sóng bị biến dạng nhân tạo.</li>
   <li>Cắt phân đoạn 8.192 mẫu, lọc bỏ các phân đoạn có năng lượng bất thường (ngưỡng phân vị 5% và 95%).</li>
 </ul>
 
-<h3>Bước 2: Bộ Khử Nhiễu Wavelet Đối Xứng Siêu Nhẹ (`HaarSymLite`)</h3>
+<h3>Bước 2: Bộ Khử Nhiễu Wavelet Đối Xứng Siêu Nhẹ (HaarSymLite)</h3>
 <ul>
-  <li><b>Phân rã Wavelet 1D (DWT):</b> Tách tín hiệu thành thành phần xấp xỉ tần số thấp ($A_1$) và chi tiết tần số cao ($D_1$) bằng hàm Wavelet Haar. Chiều dài chuỗi giảm 50% ($8192 \rightarrow 4096$), giúp giảm một nửa khối lượng tính toán.</li>
+  <li><b>Phân rã Wavelet 1D (DWT):</b> Tách tín hiệu thành thành phần xấp xỉ tần số thấp (A<sub>1</sub>) và chi tiết tần số cao (D<sub>1</sub>) bằng hàm Wavelet Haar. Chiều dài chuỗi giảm 50% (8192 &rarr; 4096), giúp giảm một nửa khối lượng tính toán.</li>
   <li><b>Kiến trúc U-Net 1D:</b> Tích hợp khối <i>Inverted Residual Blocks</i> kết hợp cơ chế chú ý theo kênh <b>SE1D (Squeeze-and-Excitation 1D)</b>, giúp tự động học trọng số khuếch đại các kênh chứa đỉnh QRS và dập tắt các kênh chứa nhiễu ngẫu nhiên.</li>
   <li><b>Detail Gate Block:</b> Cơ chế cổng điều hướng đặc trưng chi tiết cao tần tại các đường kết nối tắt (Skip Connections), chống mất mát biên độ đỉnh R khi truyền qua các tầng giải mã.</li>
   <li><b>Tầng Giải mã IDWT (Inverse DWT):</b> Khôi phục hoàn hảo chiều dài miền thời gian gốc mà không gây hiện tượng răng cưa (aliasing).</li>
   <li><b>Hàm Mất mát Hỗn hợp (Mixed Loss):</b>
-    $$\mathcal{{L}}_{{Mixed}} = \alpha \cdot \mathcal{{L}}_{{Time}} + (1 - \alpha) \cdot \mathcal{{L}}_{{Wavelet}}$$
-    Trong đó $\alpha = 0.8$, $\mathcal{{L}}_{{Time}}$ sử dụng <b>Huber Loss</b> (kháng ngoại lai biên độ lớn) và $\mathcal{{L}}_{{Wavelet}}$ đo sai số $L_1$ trên các hệ số chi tiết Wavelet.
+    <div class="math-block">
+      L<sub>Mixed</sub> = &alpha; &times; L<sub>Huber</sub> + (1 &minus; &alpha;) &times; L<sub>Wavelet_L1</sub>
+    </div>
+    Trong đó &alpha; = 0.8, L<sub>Huber</sub> là hàm Huber Loss (kháng ngoại lai biên độ lớn) và L<sub>Wavelet_L1</sub> đo sai số L<sub>1</sub> trên các hệ số chi tiết Wavelet.
   </li>
 </ul>
 
 <h3>Bước 3: Chuẩn Hóa Thích Ứng Sau Khử Nhiễu (Post-Denoise Z-Score)</h3>
 <p>
-  <b>Quy tắc vàng:</b> Đóng băng trọng số (freeze) bộ khử nhiễu. Bộ khử nhiễu làm việc trên mV thô để tôn trọng biên độ vật lý thực tế. Sau đó, từng nhịp 256 mẫu mới được đưa qua Z-Score để đưa về phân phối chuẩn $\mathcal{{N}}(0, 1)$, triệt tiêu sự sai lệch biên độ giữa các bệnh nhân khác nhau.
+  <b>Quy tắc vàng:</b> Đóng băng trọng số (freeze) bộ khử nhiễu. Bộ khử nhiễu làm việc trên mV thô để tôn trọng biên độ vật lý thực tế. Sau đó, từng nhịp 256 mẫu mới được đưa qua Z-Score để đưa về phân phối chuẩn N(0, 1), triệt tiêu sự sai lệch biên độ giữa các bệnh nhân khác nhau.
 </p>
 
 <h3>Bước 4: Mạng Mã Hóa Hình Thái 1D ResNet (Morphology Encoder)</h3>
@@ -304,23 +277,25 @@ def build_html():
 
 <h3>Bước 5: Nhánh Xử Lý Nhịp Học Độc Lập (RR Pathway) & Nối Đặc Trưng</h3>
 <p>
-  Vector 6 chỉ số RR đi qua nhánh riêng: <code>BatchNorm1D</code> $\rightarrow$ <code>Linear(6 -> 32)</code> $\rightarrow$ <code>GELU</code> tạo thành vector nhịp <b>32 chiều</b>. Hai vector được nối kết hợp: $128 + 32 = \mathbf{{160\text{{ chiều}}}}$. Việc tách nhánh riêng giúp thông tin nhịp thời gian không bị các đặc trưng sóng tim áp đảo.
+  Vector 6 chỉ số RR đi qua nhánh riêng: <code>BatchNorm1D</code> &rarr; <code>Linear(6 &rarr; 32)</code> &rarr; <code>GELU</code> tạo thành vector nhịp <b>32 chiều</b>. Hai vector được nối kết hợp: 128 + 32 = <b>160 chiều</b>. Việc tách nhánh riêng giúp thông tin nhịp thời gian không bị các đặc trưng sóng tim áp đảo.
 </p>
 
 <h3>Bước 6: Đầu Phân Loại Lai Lượng Tử (Hybrid Quantum VQC Head)</h3>
 <ul>
-  <li><b>Mã hóa Biên độ (Amplitude Encoding):</b> Vector 160D sau khi nén về 64D được mã hóa trực tiếp vào không gian trạng thái của <b>6 Qubit</b> ($2^6 = 64$ trạng thái trực giao):
-    $$|\psi\rangle = \sum_{{i=0}}^{{63}} x_i |i\rangle$$
+  <li><b>Mã hóa Biên độ (Amplitude Encoding):</b> Vector 160 chiều sau khi nén về 64 chiều được mã hóa trực tiếp vào không gian trạng thái của <b>6 Qubit</b> (2<sup>6</sup> = 64 trạng thái trực giao):
+    <div class="math-block">
+      |&psi;&rang; = &Sigma;<sub>i=0..63</sub> x<sub>i</sub> |i&rang;
+    </div>
   </li>
-  <li><b>Mạch Lượng tử Biến phân (VQC):</b> Gồm 2 lớp (Layers), mỗi lớp gồm các cổng quay đơn qubit $R_y(\theta), R_z(\phi)$ và vòng vướng víu CNOT dạng nhẫn kín (C-ring entanglement). <b>Tổng số tham số lượng tử cực nhỏ: chỉ 24 tham số</b>.</li>
-  <li><b>Đọc kết quả lượng tử:</b> Trích xuất 12 giá trị kỳ vọng (6 đơn qubit $\langle Z_i \rangle$ và 6 cặp lân cận $\langle Z_i Z_{{i+1}} \rangle$).</li>
-  <li><b>Nhánh Residual Bypass Cổ điển:</b> Ghép 12 giá trị lượng tử cùng nhánh tắt 64D cổ điển $\rightarrow$ MLP đưa ra 3 Logits. Cấu trúc lai giúp quá trình tối ưu gradient ổn định, tránh hiện tượng sa mạc dốc (*Barren Plateaus*).</li>
+  <li><b>Mạch Lượng tử Biến phân (VQC):</b> Gồm 2 lớp (Layers), mỗi lớp gồm các cổng quay đơn qubit R<sub>y</sub>(&theta;), R<sub>z</sub>(&phi;) và vòng vướng víu CNOT dạng nhẫn kín (C-ring entanglement). <b>Tổng số tham số lượng tử cực nhỏ: chỉ 24 tham số</b>.</li>
+  <li><b>Đọc kết quả lượng tử:</b> Trích xuất 12 giá trị kỳ vọng (6 đơn qubit &lang;Z<sub>i</sub>&rang; và 6 cặp lân cận &lang;Z<sub>i</sub>Z<sub>i+1</sub>&rang;).</li>
+  <li><b>Nhánh Residual Bypass Cổ điển:</b> Ghép 12 giá trị lượng tử cùng nhánh tắt 64D cổ điển &rarr; MLP đưa ra 3 Logits. Cấu trúc lai giúp quá trình tối ưu gradient ổn định, tránh hiện tượng sa mạc dốc (<i>Barren Plateaus</i>).</li>
 </ul>
 
 <h3>Bước 7: Chiến Lược Huấn Luyện Kháng Mất Cân Bằng & Ensemble</h3>
 <ul>
-  <li>Áp dụng bộ lấy mẫu ngẫu nhiên có trọng số <code>WeightedRandomSampler</code> với số mũ lũy thừa $\text{{sampler\_power}} = 0.9$ để kéo độ nhạy của lớp thiểu số S lên cao mà không làm sập độ chính xác của lớp bình thường N.</li>
-  <li>Tối ưu hóa bằng AdamW, phân rã trọng số $10^{{-4}}$, Cross-Entropy Loss, Early stopping (patience = 10).</li>
+  <li>Áp dụng bộ lấy mẫu ngẫu nhiên có trọng số <code>WeightedRandomSampler</code> với số mũ lũy thừa <b>sampler_power = 0.9</b> để kéo độ nhạy của lớp thiểu số S lên cao mà không làm sập độ chính xác của lớp bình thường N.</li>
+  <li>Tối ưu hóa bằng AdamW, phân rã trọng số 10<sup>&minus;4</sup>, Cross-Entropy Loss, Early stopping (patience = 10).</li>
   <li>Chạy trên 5 seeds ngẫu nhiên độc lập (0 đến 4) kết hợp Soft-voting Ensemble để triệt tiêu phương sai.</li>
 </ul>
 
@@ -333,13 +308,13 @@ def build_html():
   <h3 style="margin-top: 0; color: #1f77b4;">3.1. Có Vote theo Subject không? Tại sao KHÔNG vote gộp theo Bệnh nhân?</h3>
   <p><b>Câu trả lời dứt khoát: KHÔNG VOTE THEO SUBJECT ở khâu chẩn đoán lâm sàng!</b></p>
   <p>
-    Trong thực tế lâm sàng tim mạch, một bệnh nhân bị rối loạn nhịp tim thì đa số thời gian (90% – 95% số nhịp) tim của họ vẫn đập bình thường (lớp N). Các biến cố loạn nhịp nguy hiểm như <b>Ngoại tâm thu nhĩ (S)</b> hay <b>Ngoại tâm thu thất (V)</b> chỉ xuất hiện rải rác xen kẽ (ví dụ chỉ có 15 nhịp V xuất hiện trong 2.000 nhịp của bản ghi 30 phút).
+    Trong thực tế lâm sàng tim mạch, một bệnh nhân bị rối loạn nhịp tim thì đa số thời gian (90% &minus; 95% số nhịp) tim của họ vẫn đập bình thường (lớp N). Các biến cố loạn nhịp nguy hiểm như <b>Ngoại tâm thu nhĩ (S)</b> hay <b>Ngoại tâm thu thất (V)</b> chỉ xuất hiện rải rác xen kẽ (ví dụ chỉ có 15 nhịp V xuất hiện trong 2.000 nhịp của bản ghi 30 phút).
   </p>
   <p>
     Nếu chúng ta áp dụng cơ chế <i>Majority Vote theo Subject</i> (đa số thắng thiểu số để gán nhãn cho cả bệnh nhân), thì <b>100% bệnh nhân sẽ bị gán nhãn là Bình thường (N)</b>. Hệ thống sẽ <b>BỎ SÓT HOÀN TOÀN</b> các cơn ngoại tâm thu nguy hiểm gây đột tử!
   </p>
   <p>
-    👉 Vì vậy, theo đúng tiêu chuẩn y tế quốc tế <b>AAMI EC57</b>, hệ thống bắt buộc phải đánh giá <b>từng nhịp tim độc lập (Beat-by-beat Classification)</b> trên toàn bộ 49.298 nhịp của tập test DS2.
+    &rArr; Vì vậy, theo đúng tiêu chuẩn y tế quốc tế <b>AAMI EC57</b>, hệ thống bắt buộc phải đánh giá <b>từng nhịp tim độc lập (Beat-by-beat Classification)</b> trên toàn bộ 49.298 nhịp của tập test DS2.
   </p>
   <p>
     <b>Cơ chế Voting được dùng ở đâu trong dự án?</b><br>
@@ -363,7 +338,7 @@ def build_html():
         <li><b>Tập DS2 (22 bệnh nhân hoàn toàn mới):</b> Gồm <b>49.298 nhịp tim độc lập</b> chưa từng xuất hiện trong quá trình huấn luyện, dùng làm tập kiểm thử mù (Blind Test Set).</li>
       </ul>
     </li>
-    <li>Thay cho K-Fold, chúng ta thực hiện <b>Thực nghiệm lặp 5 Seeds ngẫu nhiên (5-run Multi-Seed Trial: Seeds 0, 1, 2, 3, 4)</b> trên tập DS2 để tính toán phương sai thống kê ($\text{{Mean}} \pm \text{{Std}}$), kiểm định kiểm tra giả thuyết thống kê (Welch's t-test, Wilcoxon signed-rank test với $p < 0.05$), sau đó gộp 5 mô hình này lại thành hệ thống <b>Ensemble 5-model</b>.</li>
+    <li>Thay cho K-Fold, chúng ta thực hiện <b>Thực nghiệm lặp 5 Seeds ngẫu nhiên (5-run Multi-Seed Trial: Seeds 0, 1, 2, 3, 4)</b> trên tập DS2 để tính toán phương sai thống kê (Mean &plusmn; Std), kiểm định kiểm tra giả thuyết thống kê (Welch's t-test, Wilcoxon signed-rank test với <i>p</i> &lt; 0.05), sau đó gộp 5 mô hình này lại thành hệ thống <b>Ensemble 5-model</b>.</li>
   </ul>
 </div>
 
@@ -374,12 +349,12 @@ def build_html():
 
 <h3>4.1. Kết Quả Khử Nhiễu Dạng Sóng Thực Tế (Waveform Fidelity)</h3>
 <p>
-  Hình 2 thể hiện dạng sóng điện tâm đồ của bản ghi Record 230 dưới tác động của nhiễu Baseline Wander và Muscle Artifact (SNR = -5 dB). Hình 3 zoom cận cảnh một chu kỳ nhịp tim (0.7 giây) qua các mô hình.
+  Hình 2 thể hiện dạng sóng điện tâm đồ của bản ghi Record 230 dưới tác động của nhiễu Baseline Wander và Muscle Artifact (SNR = &minus;5 dB). Hình 3 zoom cận cảnh một chu kỳ nhịp tim (0.7 giây) qua các mô hình.
 </p>
 
 <div class="figure-container">
   <img src="{b64_wave}" alt="So sánh dạng sóng khử nhiễu">
-  <div class="figure-caption">Hình 2: So sánh Dạng sóng Khử nhiễu trên Bản ghi Record 230 (Nhiễu hỗn hợp NSTDB, SNR = -5 dB).</div>
+  <div class="figure-caption">Hình 2: So sánh Dạng sóng Khử nhiễu trên Bản ghi Record 230 (Nhiễu hỗn hợp NSTDB, SNR = &minus;5 dB).</div>
 </div>
 
 <div class="figure-container">
@@ -397,12 +372,12 @@ def build_html():
 
 <div class="figure-container">
   <img src="{b64_snr}" alt="Đường cong SNR và PRD">
-  <div class="figure-caption">Hình 4: Đồ thị So sánh Mức Cải thiện SNR ($SNR_{{imp}}$ dB) và Độ Biến dạng $PRD$ (%) trên Toàn dải Nhiễu (từ -10 dB đến +10 dB).</div>
+  <div class="figure-caption">Hình 4: Đồ thị So sánh Mức Cải thiện SNR (SNR<sub>imp</sub> dB) và Độ Biến dạng PRD (%) trên Toàn dải Nhiễu (từ &minus;10 dB đến +10 dB).</div>
 </div>
 
 <div class="figure-container">
   <img src="{b64_noise}" alt="Phân rã theo loại nhiễu">
-  <div class="figure-caption">Hình 5: Mức Cải thiện SNR ($SNR_{{imp}}$ dB) Phân rã theo 7 Nguồn Nhiễu Sinh lý (BW, MA, EM và các tổ hợp).</div>
+  <div class="figure-caption">Hình 5: Mức Cải thiện SNR (SNR<sub>imp</sub> dB) Phân rã theo 7 Nguồn Nhiễu Sinh lý (BW, MA, EM và các tổ hợp).</div>
 </div>
 
 <p>
@@ -414,11 +389,11 @@ def build_html():
       <th>Mô hình Khử nhiễu</th>
       <th>Hàm Mất mát</th>
       <th>Số Tham số</th>
-      <th>$SNR_{{imp}}$ (dB) ↑</th>
-      <th>$PRD$ (%) ↓</th>
-      <th>RMSE ↓</th>
-      <th>MAE ↓</th>
-      <th>Cosine Sim ↑</th>
+      <th>SNR<sub>imp</sub> (dB) &uarr;</th>
+      <th>PRD (%) &darr;</th>
+      <th>RMSE &darr;</th>
+      <th>MAE &darr;</th>
+      <th>Cosine Sim &uarr;</th>
     </tr>
   </thead>
   <tbody>
@@ -494,7 +469,7 @@ def build_html():
     </tr>
     <tr class="highlight-cell">
       <td><b>HaarSymLite (Đề xuất tối ưu)</b></td>
-      <td><b>Mixed ($\alpha=0.8$)</b></td>
+      <td><b>Mixed (&alpha;=0.8)</b></td>
       <td><b>73.420</b></td>
       <td><b>10.93 dB</b></td>
       <td><b>30.70%</b></td>
@@ -507,7 +482,7 @@ def build_html():
 
 <div class="page-break"></div>
 
-<h3>4.3. Đánh Giá Sai Số Hình Thái Lâm Sàng (`neurokit2`)</h3>
+<h3>4.3. Đánh Giá Sai Số Hình Thái Lâm Sàng (neurokit2)</h3>
 
 <div class="figure-container">
   <img src="{b64_clin}" alt="Sai số hình thái y sinh">
@@ -518,9 +493,9 @@ def build_html():
   Hình 6 cung cấp bằng chứng y khoa định lượng thuyết phục:
 </p>
 <ul>
-  <li><b>Sai số biên độ đỉnh R ($e_R$):</b> Tín hiệu qua bộ lọc Mixed Loss chỉ lệch <b>0.048 mV</b> (thấp hơn 3 lần so với 0.142 mV của hàm MSE).</li>
-  <li><b>Sai số độ rộng cụm QRS ($QRS_{{dur}}$):</b> Lệch chỉ <b>5.2 ms</b> (so với 19.6 ms của MSE).</li>
-  <li><b>Sai số khoảng QT ($QT_{{interval}}$):</b> Lệch chỉ <b>8.7 ms</b> (so với 24.8 ms của MSE). Giúp ngăn ngừa chẩn đoán nhầm hội chứng kéo dài khoảng QT (Long QT syndrome).</li>
+  <li><b>Sai số biên độ đỉnh R (<i>e</i><sub>R</sub>):</b> Tín hiệu qua bộ lọc Mixed Loss chỉ lệch <b>0.048 mV</b> (thấp hơn 3 lần so với 0.142 mV của hàm MSE).</li>
+  <li><b>Sai số độ rộng cụm QRS (QRS<sub>dur</sub>):</b> Lệch chỉ <b>5.2 ms</b> (so với 19.6 ms của MSE).</li>
+  <li><b>Sai số khoảng QT (QT<sub>interval</sub>):</b> Lệch chỉ <b>8.7 ms</b> (so với 24.8 ms của MSE). Giúp ngăn ngừa chẩn đoán nhầm hội chứng kéo dài khoảng QT (Long QT syndrome).</li>
 </ul>
 
 <h3>4.4. Ma Trận Nhầm Lẫn (Confusion Matrix) Trên 49.298 Nhịp Test Độc Lập</h3>
@@ -627,8 +602,8 @@ def build_html():
       <td><b>Config 4: Proposed (SE1D+Mixed)</b></td>
       <td><b>Bật (HaarSymLite)</b></td>
       <td><b>Mixed Loss</b></td>
-      <td><b>0.8146 ± 0.023</b></td>
-      <td><b>0.7897 ± 0.031</b></td>
+      <td><b>0.8146 &plusmn; 0.023</b></td>
+      <td><b>0.7897 &plusmn; 0.031</b></td>
       <td><b>0.8487 / 0.8277</b></td>
     </tr>
   </tbody>
@@ -657,8 +632,8 @@ def build_html():
       <th>Tham số (Trainable)</th>
       <th>Dung lượng FP32</th>
       <th>Thiết bị Đo</th>
-      <th>Thời gian Xử lý / Nhịp (ms) ↓</th>
-      <th>Thông lượng (Nhịp/giây) ↑</th>
+      <th>Thời gian Xử lý / Nhịp (ms) &darr;</th>
+      <th>Thông lượng (Nhịp/giây) &uarr;</th>
     </tr>
   </thead>
   <tbody>
@@ -729,10 +704,10 @@ def build_html():
       <th>Công trình Công bố</th>
       <th>Năm / Tạp chí</th>
       <th>Kiến trúc</th>
-      <th>$SNR_{{imp}}$ (dB) ↑</th>
-      <th>$PRD$ (%) ↓</th>
-      <th>RMSE ↓</th>
-      <th>Tốc độ CPU (ms/nhịp) ↓</th>
+      <th>SNR<sub>imp</sub> (dB) &uarr;</th>
+      <th>PRD (%) &darr;</th>
+      <th>RMSE &darr;</th>
+      <th>Tốc độ CPU (ms/nhịp) &darr;</th>
     </tr>
   </thead>
   <tbody>
@@ -801,12 +776,12 @@ def build_html():
       <th>Tạp chí / Năm</th>
       <th>Phương thức Khử nhiễu</th>
       <th>Cơ chế Học máy</th>
-      <th>Accuracy (%) ↑</th>
-      <th>Macro-F1 ↑</th>
-      <th>F1 Lớp S ↑</th>
-      <th>Độ chuẩn xác S (+P %) ↑</th>
-      <th>Độ nhạy S (Se %) ↑</th>
-      <th>F1 Lớp V ↑</th>
+      <th>Accuracy (%) &uarr;</th>
+      <th>Macro-F1 &uarr;</th>
+      <th>F1 Lớp S &uarr;</th>
+      <th>Độ chuẩn xác S (+P %) &uarr;</th>
+      <th>Độ nhạy S (Se %) &uarr;</th>
+      <th>F1 Lớp V &uarr;</th>
     </tr>
   </thead>
   <tbody>
@@ -901,15 +876,15 @@ def build_html():
   <b>Phân tích So sánh Đột phá Trước Literature Quốc tế:</b>
   <ol>
     <li><b>Độ chính xác Tổng thể Vượt trội:</b> Đạt <b>96.55%</b>, vượt qua Mondéjar 2019 (+2.05%) và de Chazal 2004 (+10.35%) trên cùng tập dữ liệu DS2 gồm 49.298 nhịp.</li>
-    <li><b>Giải quyết Triệt để Lớp Khó Nhất (Lớp S):</b> F1 lớp S đạt <b>0.6631</b> (vượt xa 0.607 của Mondéjar). Đặc biệt độ chuẩn xác $+P$ đạt <b>66.04%</b> so với 49.70% (tăng ròng +16.34%), giúp giảm thiểu đáng kể tỷ lệ cảnh báo giả cho điều dưỡng viên trong bệnh viện.</li>
+    <li><b>Giải quyết Triệt để Lớp Khó Nhất (Lớp S):</b> F1 lớp S đạt <b>0.6631</b> (vượt xa 0.607 của Mondéjar). Đặc biệt độ chuẩn xác +P đạt <b>66.04%</b> so với 49.70% (tăng ròng +16.34%), giúp giảm thiểu đáng kể tỷ lệ cảnh báo giả cho điều dưỡng viên trong bệnh viện.</li>
     <li><b>Điều chỉnh Điểm Vận hành Lâm sàng:</b> Khi bác sĩ ưu tiên không bỏ sót bệnh ngoại tâm thu nhĩ (tăng Sensitivity), việc đẩy tham số lấy mẫu <code>sampler_power = 1.0</code> giúp Độ nhạy lớp S đạt mốc <b>81.49%</b>, cao hơn mọi công trình quốc tế từng công bố.</li>
-    <li><b>Đột phá từ Mạch Lượng tử VQC:</b> Mạch lượng tử chỉ sử dụng <b>24 tham số biến phân</b> nhưng khi kết hợp bộ khử nhiễu chất lượng cao đã đạt kết quả phân loại F1 <b>0.8277 – 0.8402</b>, vượt qua cả các mạng nơ-ron sâu cổ điển hàng triệu tham số của Sellami 2019 (0.795) và de Chazal 2004 (0.742).</li>
+    <li><b>Đột phá từ Mạch Lượng tử VQC:</b> Mạch lượng tử chỉ sử dụng <b>24 tham số biến phân</b> nhưng khi kết hợp bộ khử nhiễu chất lượng cao đã đạt kết quả phân loại F1 <b>0.8277 &minus; 0.8402</b>, vượt qua cả các mạng nơ-ron sâu cổ điển hàng triệu tham số của Sellami 2019 (0.795) và de Chazal 2004 (0.742).</li>
   </ol>
 </div>
 
 <br>
 <div style="text-align: center; font-size: 9pt; color: #777; border-top: 1px solid #ddd; padding-top: 8px;">
-  <i>Báo cáo Kỹ thuật Toàn diện — Dự án Denoise_ECG_BMELaB — Đại học Bách khoa Hà Nội (HUST) — Hoàn tất Tháng 10/2026</i>
+  <i>Báo cáo Kỹ thuật Toàn diện &mdash; Dự án Denoise_ECG_BMELaB &mdash; Hoàn tất Tháng 10/2026</i>
 </div>
 
 </body>
