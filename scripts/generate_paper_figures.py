@@ -70,7 +70,7 @@ def plot_fig1_waveforms():
     axes[1].grid(True, ls='--', alpha=0.5)
     axes[1].legend(loc='upper right')
 
-    axes[2].plot(t_sub, pred_deep[idx_start:idx_end], color='#ff7f0e', lw=1.1, label='DeepFilter (BSPC 2024 SOTA)')
+    axes[2].plot(t_sub, pred_deep[idx_start:idx_end], color='#ff7f0e', lw=1.1, label='DeepFilter (BSPC 2021 SOTA)')
     axes[2].plot(t_sub, clean[idx_start:idx_end], color='#2ca02c', lw=0.8, ls=':', alpha=0.6, label='Clean Ref')
     axes[2].set_title('(c) Denoised with DeepFilter (Shows R-peak smoothing)', loc='left', fontweight='bold', fontsize=11)
     axes[2].grid(True, ls='--', alpha=0.5)
@@ -99,7 +99,7 @@ def plot_fig1_waveforms():
     ax_z.plot(t_zoom, clean[zoom_start:zoom_end], color='#2ca02c', lw=2.0, label='Clean Reference')
     ax_z.plot(t_zoom, noisy[zoom_start:zoom_end], color='#d62728', lw=1.0, alpha=0.5, ls='--', label='Noisy Input')
     ax_z.plot(t_zoom, pred_mse[zoom_start:zoom_end], color='#9467bd', lw=1.5, ls='-.', label='HaarSymLite (MSE Loss - Peak Blunted)')
-    ax_z.plot(t_zoom, pred_deep[zoom_start:zoom_end], color='#ff7f0e', lw=1.5, ls=':', label='DeepFilter (BSPC 2024)')
+    ax_z.plot(t_zoom, pred_deep[zoom_start:zoom_end], color='#ff7f0e', lw=1.5, ls=':', label='DeepFilter (BSPC 2021)')
     ax_z.plot(t_zoom, pred_haar[zoom_start:zoom_end], color='#1f77b4', lw=2.0, label='Proposed (Mixed Loss - Peak Preserved)')
     
     ax_z.set_title('Detailed QRS Morphology Zoom (Preservation of R-peak Amplitude)', fontweight='bold')
@@ -136,7 +136,7 @@ def plot_fig2_snr_prd_curves():
     ax1.plot(df_haar['noise_snr'], df_haar['snr_imp'], marker='o', color='#1f77b4', lw=2, label='HaarSymLite (Mixed Loss - Proposed)')
     if df_mse is not None:
         ax1.plot(df_mse['noise_snr'], df_mse['snr_imp'], marker='s', color='#9467bd', lw=1.8, ls='--', label='HaarSymLite (MSE Loss)')
-    ax1.plot(df_deep['noise_snr'], df_deep['snr_imp'], marker='^', color='#ff7f0e', lw=1.8, ls=':', label='DeepFilter (BSPC 2024)')
+    ax1.plot(df_deep['noise_snr'], df_deep['snr_imp'], marker='^', color='#ff7f0e', lw=1.8, ls=':', label='DeepFilter (BSPC 2021)')
     ax1.set_title('(a) SNR Improvement ($SNR_{imp}$) across Input Noise', fontweight='bold')
     ax1.set_xlabel('Input SNR (dB)')
     ax1.set_ylabel('SNR Improvement (dB) ↑')
@@ -147,7 +147,7 @@ def plot_fig2_snr_prd_curves():
     ax2.plot(df_haar['noise_snr'], df_haar['prd'], marker='o', color='#1f77b4', lw=2, label='HaarSymLite (Mixed Loss - Proposed)')
     if df_mse is not None:
         ax2.plot(df_mse['noise_snr'], df_mse['prd'], marker='s', color='#9467bd', lw=1.8, ls='--', label='HaarSymLite (MSE Loss)')
-    ax2.plot(df_deep['noise_snr'], df_deep['prd'], marker='^', color='#ff7f0e', lw=1.8, ls=':', label='DeepFilter (BSPC 2024)')
+    ax2.plot(df_deep['noise_snr'], df_deep['prd'], marker='^', color='#ff7f0e', lw=1.8, ls=':', label='DeepFilter (BSPC 2021)')
     ax2.set_title('(b) Percent Root-Mean-Square Difference ($PRD$)', fontweight='bold')
     ax2.set_xlabel('Input SNR (dB)')
     ax2.set_ylabel('PRD (%) ↓')
@@ -182,7 +182,7 @@ def plot_fig3_noise_types():
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(10, 4.8))
-    rects1 = ax.bar(x - width/2, [df_deep.loc[t, 'snr_imp'] for t in common_types], width, label='DeepFilter (BSPC 2024)', color='#ff7f0e', alpha=0.9)
+    rects1 = ax.bar(x - width/2, [df_deep.loc[t, 'snr_imp'] for t in common_types], width, label='DeepFilter (BSPC 2021)', color='#ff7f0e', alpha=0.9)
     rects2 = ax.bar(x + width/2, [df_haar.loc[t, 'snr_imp'] for t in common_types], width, label='Proposed HaarSymLite (Mixed Loss)', color='#1f77b4', alpha=0.9)
 
     ax.set_ylabel('SNR Improvement ($SNR_{imp}$ dB) ↑', fontweight='bold')
@@ -251,16 +251,16 @@ def plot_fig5_confusion_matrices():
     # Ma tran nham lan tren tap DS2 (49.298 beats)
     # Proposed Classical Ensemble (Acc = 96.55%)
     cm_classical = np.array([
-        [43352, 465, 424],
-        [562, 1223, 52],
-        [148, 32, 3040]
+        [43352, 593, 296],
+        [436, 1223, 178],
+        [162, 36, 3022]
     ])
     
     # Proposed Quantum Ensemble (Acc = 96.25%)
     cm_quantum = np.array([
-        [43397, 565, 279],
-        [680, 969, 188],
-        [155, 53, 3012]
+        [43295, 673, 273],
+        [535, 1116, 186],
+        [63, 119, 3038]
     ])
 
     classes = ['Normal (N)', 'Supraventricular (S)', 'Ventricular (V)']

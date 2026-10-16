@@ -203,11 +203,11 @@ Vector Hình thái (128D)           Vector Nhịp học (32D)
 | **DNN-DAN** | 2022 | Dual Attention Net | 230K | 8.84 | 38.60 | 0.113 | 0.083 | 64.1 ms |
 | **FCN** | 2020 | Fully Convolutional | 738K | 9.05 | 37.80 | 0.110 | 0.081 | 72.3 ms |
 | **LiWave** | 2023 | Lightweight Wavelet | 82K | 9.21 | 37.10 | 0.108 | 0.079 | 45.0 ms |
-| **DeepFilter** | **BSPC 2024** | Multi-branch Dilated | **68K** | **9.64** | **35.63** | **0.105** | **0.076** | **42.1 ms** |
+| **DeepFilter** | **BSPC 2021** | Multi-branch Dilated | **68K** | **9.64** | **35.63** | **0.105** | **0.076** | **42.1 ms** |
 | **HaarSymLite (Ours)** | **Đề xuất** | **U-Net DWT + SE1D** | **73K** | **10.93** | **30.70** | **0.093** | **0.067** | **35.2 ms** |
 
 > **Phân tích so sánh vượt trội:**
-> 1. **Vượt SOTA 2024 (DeepFilter):** Mô hình của chúng ta đạt mức cải thiện SNR cao hơn **+1.29 dB** (10.93 dB so với 9.64 dB).
+> 1. **Vượt SOTA BSPC 2021 (DeepFilter):** Mô hình của chúng ta đạt mức cải thiện SNR cao hơn **+1.29 dB** (10.93 dB so với 9.64 dB).
 > 2. **Bảo toàn tín hiệu vượt bậc:** Chỉ số biến dạng $PRD$ giảm sâu **5.04%** (từ 35.63% xuống 30.70%).
 > 3. **Tối ưu tính toán biên:** Nhờ cấu trúc DWT nén chiều dài tín hiệu từ tầng đầu, thời gian thực thi trên CPU giảm xuống **35.2 ms**, nhanh hơn DeepFilter gần **20%**, đáp ứng trọn vẹn yêu cầu chạy thời gian thực trên thiết bị Holter/Smartwatch.
 
@@ -253,7 +253,7 @@ Vector Hình thái (128D)           Vector Nhịp học (32D)
 ## 6. KẾT LUẬN TỔNG QUAN
 
 Tài liệu này xác nhận rằng hệ thống `Denoise_ECG_BMELaB`:
-1. Đã giải quyết triệt để bài toán khử nhiễu đa nguồn (BW, MA, EM) vượt mức SOTA 2024.
+1. Đã giải quyết triệt để bài toán khử nhiễu đa nguồn (BW, MA, EM) vượt mức SOTA DeepFilter (BSPC 2021).
 2. Đã giải thích rõ ràng cơ chế liên kết giữa hàm mất mát hình thái và khả năng chẩn đoán của AI.
 3. Đã chứng minh sự khả thi của Học máy Lượng tử (QML) trong y tế với lượng tham số siêu nhỏ.
 4. Đạt các chỉ số vượt trội so với các bài báo quốc tế trên cùng giao thức kiểm thử chuẩn mực Inter-patient DS1/DS2.

@@ -98,7 +98,7 @@
 
 Thực nghiệm trên toàn bộ 45 phân đoạn test chuẩn, pha tạp 3 loại nhiễu NSTDB ở các mức SNR từ -10 dB đến +10 dB:
 
-### 3.1. So sánh Đối đầu với SOTA (BSPC 2024 DeepFilter & Các Baselines)
+### 3.1. So sánh Đối đầu với SOTA (BSPC 2021 DeepFilter & Các Baselines)
 
 | Mô hình | Hàm Loss | Tham số | SNR Cải thiện ($SNR_{imp}$ dB) ↑ | PRD (%) ↓ | RMSE ↓ | MAE ↓ | Cosine Sim ↑ |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -106,11 +106,11 @@ Thực nghiệm trên toàn bộ 45 phân đoạn test chuẩn, pha tạp 3 lo�
 | **DNN-DAN** | MSE | 230.721 | 8.84 dB | 38.60% | 0.1132 | 0.0831 | 0.9125 |
 | **FCN** | MSE | 738.913 | 9.05 dB | 37.80% | 0.1105 | 0.0810 | 0.9180 |
 | **LiWave** | MSE | 82.085 | 9.21 dB | 37.10% | 0.1087 | 0.0795 | 0.9205 |
-| **DeepFilter (BSPC 2024)** | MSE | 68.719 | 9.54 dB | 35.74% | 0.1049 | 0.0763 | 0.9263 |
-| **DeepFilter (BSPC 2024)** | Mixed | 68.719 | 9.64 dB | 35.63% | 0.1052 | 0.0763 | 0.9253 |
+| **DeepFilter (BSPC 2021)** | MSE | 68.719 | 9.54 dB | 35.74% | 0.1049 | 0.0763 | 0.9263 |
+| **DeepFilter (BSPC 2021)** | Mixed | 68.719 | 9.64 dB | 35.63% | 0.1052 | 0.0763 | 0.9253 |
 | **HaarSymLite (CBAM1D + Mish)** | Mixed | 73.420 | 10.11 dB | 34.20% | 0.1018 | 0.0725 | 0.9360 |
-| **HaarSymLite (MSE Baseline)** | MSE | 73.420 | 10.48 dB | 32.28% | 0.0982 | 0.0710 | 0.9395 |
-| **HaarSymLite (Đề xuất tối ưu)** | **Mixed ($\alpha=0.8$)** | **73.420** | **10.93 dB** | **30.70%** | **0.0937** | **0.0677** | **0.9434** |
+| **HaarSymLite (MSE Baseline)** | MSE | 73.294 | 10.48 dB | 32.28% | 0.0982 | 0.0710 | 0.9395 |
+| **HaarSymLite (Đề xuất tối ưu)** | **Mixed ($\alpha=0.8$)** | **73.294** | **10.93 dB** | **30.70%** | **0.0937** | **0.0677** | **0.9434** |
 
 > **Điểm nhấn vượt bậc:**
 > - `HaarSymLite (Mixed)` vượt **+1.29 dB SNR cải thiện** so với SOTA `DeepFilter` (10.93 dB so với 9.64 dB).
@@ -136,8 +136,8 @@ Thực nghiệm trên toàn bộ 45 phân đoạn test chuẩn, pha tạp 3 lo�
 
 | Mô hình | Trainable Params | Dung lượng FP32 | Thiết bị đo | Thời gian xử lý 1 nhịp ($ms$) ↓ | Tốc độ thông lượng (Nhịp/giây) ↑ |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **DeepFilter (BSPC 2024)** | 68.719 | 0.262 MB | Intel CPU | 42.10 ms | 23.75 beats/s |
-| **HaarSymLite (Đề xuất)** | **73.420** | **0.280 MB** | **Intel CPU** | **35.20 ms** | **28.41 beats/s** |
+| **DeepFilter (BSPC 2021)** | 68.719 | 0.262 MB | Intel CPU | 42.10 ms | 23.75 beats/s |
+| **HaarSymLite (Đề xuất)** | **73.294** | **0.280 MB** | **Intel CPU** | **35.20 ms** | **28.41 beats/s** |
 
 > **Lợi thế ứng dụng thực tế (Wearables / Holter):**  
 > Dù số lượng tham số gần tương đương (~70K tham số), cấu trúc U-Net 1D kết hợp Wavelet DWT giảm chiều dài chuỗi từ sớm, giúp **HaarSymLite chạy nhanh hơn SOTA tới 19.6%** trên môi trường nhúng không có GPU.
@@ -204,7 +204,7 @@ So sánh trực tiếp trên cùng giao thức **Inter-patient DS1/DS2 (AAMI EC5
 
 ## 9. Đóng góp Khoa học Chính (Key Contributions)
 
-1. **Đề xuất kiến trúc khử nhiễu Wavelet gọn nhẹ (`HaarSymLite`):** Đạt mức cải thiện $SNR_{imp}$ **+10.93 dB** và giảm biến dạng $PRD$ xuống **30.70%**, vượt trội hơn mô hình SOTA gần đây (*DeepFilter*, BSPC 2024: 9.64 dB / 35.74%) trên cùng điều kiện thực nghiệm MIT-BIH/NSTDB.
+1. **Đề xuất kiến trúc khử nhiễu Wavelet gọn nhẹ (`HaarSymLite`):** Đạt mức cải thiện $SNR_{imp}$ **+10.93 dB** và giảm biến dạng $PRD$ xuống **30.70%**, vượt trội hơn mô hình SOTA gần đây (*DeepFilter*, BSPC 2021: 9.64 dB / 35.74%) trên cùng điều kiện thực nghiệm MIT-BIH/NSTDB.
 2. **Phân tích tác động của khử nhiễu lên tác vụ chẩn đoán hạ nguồn:** Kết hợp đánh giá hình thái lâm sàng (`neurokit2`) và phân loại nhịp tim, cung cấp bằng chứng thực nghiệm rõ ràng chứng minh hàm MSE truyền thống làm biến dạng phức bộ QRS, trong khi Mixed Loss bảo toàn tốt hơn hình thái y sinh cho khâu chẩn đoán.
 3. **Tối ưu hóa tài nguyên cho tính toán biên:** Mô hình đạt kích thước nhỏ gọn (~73K tham số, 0.28 MB) và tốc độ xử lý nhanh (**35.2 ms/nhịp trên CPU tiêu chuẩn**), chứng minh tiềm năng ứng dụng thực tế trên các thiết bị đeo và hệ thống giám sát tim mạch thời gian thực.
 4. **Khảo sát hiệu quả của Mạch Lượng tử Biến phân (VQC):** Đánh giá mô hình phân loại lai lượng tử - cổ điển trên dữ liệu khử nhiễu thực nghiệm, chứng minh mạch lượng tử kích thước nhỏ (6-qubit, 24 tham số) có khả năng đạt hiệu quả chẩn đoán cạnh tranh với mạng nơ-ron truyền thống (Macro-F1 0.8277 - 0.8402).

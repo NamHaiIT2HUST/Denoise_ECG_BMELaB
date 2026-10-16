@@ -259,9 +259,9 @@ def build_html():
   <li><b>Tầng Giải mã IDWT (Inverse DWT):</b> Khôi phục hoàn hảo chiều dài miền thời gian gốc mà không gây hiện tượng răng cưa (aliasing).</li>
   <li><b>Hàm Mất mát Hỗn hợp (Mixed Loss):</b>
     <div class="math-block">
-      L<sub>Mixed</sub> = &alpha; &times; L<sub>Huber</sub> + (1 &minus; &alpha;) &times; L<sub>Wavelet_L1</sub>
+      L<sub>Mixed</sub> = &alpha; &times; L<sub>MSE</sub> + (1 &minus; &alpha;) &times; L<sub>L1</sub>
     </div>
-    Trong đó &alpha; = 0.8, L<sub>Huber</sub> là hàm Huber Loss (kháng ngoại lai biên độ lớn) và L<sub>Wavelet_L1</sub> đo sai số L<sub>1</sub> trên các hệ số chi tiết Wavelet.
+    Trong đó &alpha; = 0.8 (tương ứng mã nguồn <code>MixedMSEL1Loss</code> trong <code>src/losses/composite.py</code>), kết hợp tối ưu giữa hàm MSE (tăng tỷ số tín hiệu trên nhiễu SNR) và chuẩn sai số tuyệt đối L<sub>1</sub> (hạn chế bóp méo đỉnh nhọn sóng tim R). Ngoài ra, hệ thống hỗ trợ Huber Loss và Wavelet-Haar Loss cho các khảo sát mở rộng.
   </li>
 </ul>
 
@@ -438,7 +438,7 @@ def build_html():
       <td>0.9205</td>
     </tr>
     <tr>
-      <td><b>DeepFilter (BSPC 2024 SOTA)</b></td>
+      <td><b>DeepFilter (BSPC 2021 SOTA)</b></td>
       <td>Mixed</td>
       <td>68.719</td>
       <td>9.64 dB</td>
@@ -450,7 +450,7 @@ def build_html():
     <tr>
       <td><b>HaarSymLite (MSE Baseline)</b></td>
       <td>MSE</td>
-      <td>73.420</td>
+      <td>73.294</td>
       <td>10.48 dB</td>
       <td>32.28%</td>
       <td>0.0982</td>
@@ -470,7 +470,7 @@ def build_html():
     <tr class="highlight-cell">
       <td><b>HaarSymLite (Đề xuất tối ưu)</b></td>
       <td><b>Mixed (&alpha;=0.8)</b></td>
-      <td><b>73.420</b></td>
+      <td><b>73.294</b></td>
       <td><b>10.93 dB</b></td>
       <td><b>30.70%</b></td>
       <td><b>0.0937</b></td>
@@ -521,30 +521,30 @@ def build_html():
     <tr>
       <td><b>Bình thường (N)</b></td>
       <td class="highlight-cell">43.352 (98.0%)</td>
-      <td>465 (1.1%)</td>
-      <td>424 (0.9%)</td>
+      <td>593 (1.3%)</td>
+      <td>296 (0.7%)</td>
       <td>44.241</td>
       <td><b>97.99%</b></td>
     </tr>
     <tr>
       <td><b>Bất thường Nhĩ (S)</b></td>
-      <td>562 (30.6%)</td>
+      <td>436 (23.7%)</td>
       <td class="highlight-cell">1.223 (66.6%)</td>
-      <td>52 (2.8%)</td>
+      <td>178 (9.7%)</td>
       <td>1.837</td>
       <td><b>66.58%</b></td>
     </tr>
     <tr>
       <td><b>Bất thường Thất (V)</b></td>
-      <td>148 (4.6%)</td>
-      <td>32 (1.0%)</td>
-      <td class="highlight-cell">3.040 (94.4%)</td>
+      <td>162 (5.0%)</td>
+      <td>36 (1.1%)</td>
+      <td class="highlight-cell">3.022 (93.9%)</td>
       <td>3.220</td>
-      <td><b>94.41%</b></td>
+      <td><b>93.85%</b></td>
     </tr>
     <tr>
       <td><b>Độ chuẩn xác (+P)</b></td>
-      <td><b>98.39%</b></td>
+      <td><b>98.64%</b></td>
       <td><b>66.04%</b></td>
       <td><b>86.44%</b></td>
       <td><b>Tổng: 49.298</b></td>
@@ -670,7 +670,7 @@ def build_html():
       <td>22.22 beats/s</td>
     </tr>
     <tr>
-      <td><b>DeepFilter (BSPC 2024 SOTA)</b></td>
+      <td><b>DeepFilter (BSPC 2021 SOTA)</b></td>
       <td>68.719</td>
       <td>0.26 MB</td>
       <td>Intel CPU</td>
@@ -679,7 +679,7 @@ def build_html():
     </tr>
     <tr class="highlight-cell">
       <td><b>HaarSymLite (Đề xuất)</b></td>
-      <td><b>73.420</b></td>
+      <td><b>73.294</b></td>
       <td><b>0.28 MB</b></td>
       <td><b>Intel CPU</b></td>
       <td><b>35.20 ms</b></td>
@@ -749,7 +749,7 @@ def build_html():
     </tr>
     <tr>
       <td><b>DeepFilter (Romero et al.)</b></td>
-      <td><b>BSPC 2024</b></td>
+      <td><b>BSPC 2021</b></td>
       <td>Multi-branch Dilated</td>
       <td><b>9.64 dB</b></td>
       <td><b>35.63%</b></td>

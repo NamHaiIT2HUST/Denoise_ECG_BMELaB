@@ -6,7 +6,7 @@ from src.transforms.dwt1d import DWT1D, IDWT1D
 
 
 class InvertedSEBlock1D(nn.Module):
-    def __init__(self, channels, expansion=4, kernel_size=7, se_reduction=8):
+    def __init__(self, channels, expansion=4, kernel_size=7, se_reduction=8, attention='se', act_fn='silu'):
         super().__init__()
         hidden = channels * expansion
         padding = (kernel_size - 1) // 2
@@ -24,8 +24,8 @@ class InvertedSEBlock1D(nn.Module):
         self.bn2 = nn.BatchNorm1d(hidden)
         self.project = nn.Conv1d(hidden, channels, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm1d(channels)
-        self.se = CBAM1D(channels, r=se_reduction)
-        self.act = nn.Mish(inplace=True)
+        self.se = CBAM1D(channels, r=se_reduction) if attention == 'cbam' else SE1D(channels, r=se_reduction)
+        self.act = nn.Mish(inplace=True) if act_fn == 'mish' else nn.SiLU(inplace=True)
         self.gamma = nn.Parameter(torch.tensor(0.1))
 
     def forward(self, x):
@@ -38,7 +38,7 @@ class InvertedSEBlock1D(nn.Module):
 
 
 class DetailGateBlock1D(nn.Module):
-    def __init__(self, channels, se_reduction=8):
+    def __init__(self, channels, se_reduction=8, attention='se', act_fn='silu'):
         super().__init__()
         self.dw = nn.Conv1d(
             channels,
@@ -50,8 +50,8 @@ class DetailGateBlock1D(nn.Module):
         )
         self.pw = nn.Conv1d(channels, channels, kernel_size=1, bias=False)
         self.bn = nn.BatchNorm1d(channels)
-        self.gate = CBAM1D(channels, r=se_reduction)
-        self.act = nn.Mish(inplace=True)
+        self.gate = CBAM1D(channels, r=se_reduction) if attention == 'cbam' else SE1D(channels, r=se_reduction)
+        self.act = nn.Mish(inplace=True) if act_fn == 'mish' else nn.SiLU(inplace=True)
         self.gamma = nn.Parameter(torch.tensor(0.1))
 
     def forward(self, x):
@@ -82,6 +82,8 @@ class HaarSymLite(nn.Module):
         mid_depth=3,
         se_reduction=8,
         wavelet="haar",
+        attention="se",
+        act_fn="silu",
     ):
         super().__init__()
         c = base
@@ -93,26 +95,26 @@ class HaarSymLite(nn.Module):
         self.stem = nn.Sequential(
             nn.Conv1d(1, c, kernel_size=7, padding=3, bias=False),
             nn.BatchNorm1d(c),
-            nn.Mish(inplace=True),
+            nn.Mish(inplace=True) if act_fn == "mish" else nn.SiLU(inplace=True),
         )
-        self.enc1 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction)
+        self.enc1 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
         self.dwt1 = DWT1D(in_channels=c, wavelet=wavelet)
-        self.skip1 = DetailGateBlock1D(c, se_reduction=se_reduction)
+        self.skip1 = DetailGateBlock1D(c, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
 
-        self.enc2 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction)
+        self.enc2 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
         self.dwt2 = DWT1D(in_channels=c, wavelet=wavelet)
-        self.skip2 = DetailGateBlock1D(c, se_reduction=se_reduction)
+        self.skip2 = DetailGateBlock1D(c, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
 
         self.mid = nn.Sequential(
             *[
-                InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction)
+                InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
                 for _ in range(mid_depth)
             ]
         )
 
-        self.dec2 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction)
+        self.dec2 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
         self.idwt2 = IDWT1D(in_channels=2 * c, wavelet=wavelet)
-        self.dec1 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction)
+        self.dec1 = InvertedSEBlock1D(c, expansion=expansion, kernel_size=7, se_reduction=se_reduction, attention=attention, act_fn=act_fn)
         self.idwt1 = IDWT1D(in_channels=2 * c, wavelet=wavelet)
         self.out_conv = nn.Conv1d(c, 1, kernel_size=3, padding=1)
 
