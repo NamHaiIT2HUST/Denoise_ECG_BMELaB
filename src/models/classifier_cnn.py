@@ -16,7 +16,7 @@ class BasicBlock1D(nn.Module):
         self.net = nn.Sequential(
             nn.Conv1d(in_ch, out_ch, 3, stride=stride, padding=1, bias=False),
             nn.BatchNorm1d(out_ch),
-            nn.Mish(inplace=True),
+            nn.SiLU(inplace=True),
             nn.Conv1d(out_ch, out_ch, 3, padding=1, bias=False),
             nn.BatchNorm1d(out_ch)
         )
@@ -26,7 +26,7 @@ class BasicBlock1D(nn.Module):
                 nn.Conv1d(in_ch, out_ch, 1, stride=stride, bias=False),
                 nn.BatchNorm1d(out_ch)
             )
-        self.act = nn.Mish(inplace=True)
+        self.act = nn.SiLU(inplace=True)
 
     def forward(self, x):
         identity = x
@@ -42,7 +42,7 @@ class CNNEncoder1D(nn.Module):
         self.stem = nn.Sequential(
             nn.Conv1d(in_ch, base, 7, padding=3, bias=False),
             nn.BatchNorm1d(base),
-            nn.Mish(inplace=True),
+            nn.SiLU(inplace=True),
             nn.MaxPool1d(2)
         )
         self.layer1 = BasicBlock1D(base, base * 2, stride=2)

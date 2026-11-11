@@ -17,6 +17,39 @@ class SE1D(nn.Module):
         return x * s
 
 
+class ResBlock1D(nn.Module):
+    """
+    Standard 1D Residual Block with SiLU activation:
+    Conv(k1) -> BN -> SiLU -> Conv(k2) -> BN -> (+ Residual) -> SiLU
+    """
+    def __init__(self, channels, k1=7, k2=3):
+        super().__init__()
+        self.conv1 = nn.Conv1d(channels, channels, kernel_size=k1, padding=k1 // 2, bias=False)
+        self.bn1 = nn.BatchNorm1d(channels)
+        self.act = nn.SiLU(inplace=True)
+        self.conv2 = nn.Conv1d(channels, channels, kernel_size=k2, padding=k2 // 2, bias=False)
+        self.bn2 = nn.BatchNorm1d(channels)
+
+    def forward(self, x):
+        residual = x
+        out = self.act(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        return self.act(residual + out)
+
+
+class ResSEBlock1D(nn.Module):
+    """
+    Standard ResSE Block: ResBlock1D followed by SE1D Channel Attention.
+    """
+    def __init__(self, channels, k1=7, k2=3, r=8):
+        super().__init__()
+        self.res = ResBlock1D(channels, k1=k1, k2=k2)
+        self.se = SE1D(channels, r=r)
+
+    def forward(self, x):
+        return self.se(self.res(x))
+
+
 class SE2D(nn.Module):
     def __init__(self, ch, r=8):
         super().__init__()
