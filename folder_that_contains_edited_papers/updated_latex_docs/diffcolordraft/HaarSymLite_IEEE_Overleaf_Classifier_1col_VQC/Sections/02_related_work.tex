@@ -1,0 +1,50 @@
+\section{Related Work}
+\label{sec:related}
+
+Table~\ref{tab:taxonomic_comparison} groups representative methods by the mechanism they use to separate the ECG from noise. We discuss each group in turn and point out what remains open.
+
+\begin{table*}[!t]
+\caption{Taxonomy of Representative ECG Denoising and Downstream Analysis Methods}
+\label{tab:taxonomic_comparison}
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{2.0cm}p{3.1cm}p{3.9cm}p{3.3cm}p{4.0cm}@{}}
+\toprule
+\textbf{Category} & \textbf{Method} & \textbf{Core mechanism} & \textbf{Strength} & \textbf{Limitation} \\
+\midrule
+\multirow{3}{2.0cm}{Traditional filtering}
+& Adaptive filter (LMS), Thakor 1991 \cite{clifford2006} & Time-domain adaptive FIR noise cancellation & Very cheap, online & Degrades under rapid heart-rate change \\
+& Extended Kalman filter, Sameni 2007 \cite{clifford2006} & Non-linear Bayesian dynamic ECG model & Explicit waveform prior & Needs accurate state-space priors \\
+& Wavelet thresholding, Alfaouri 2008 \cite{clifford2006} & DWT with soft thresholding of detail bands & Multiresolution, no training & Handcrafted threshold erases low-amplitude P/T waves \\
+\midrule
+\multirow{3}{2.0cm}{Deep 1D learning}
+& DNN-DAN, Xiong 2016 \cite{xiong2016} & Fully connected denoising autoencoder & Learns noise-to-clean mapping & Coarse features, no translation invariance \\
+& FCN, Chiang 2019 \cite{chiang2019} & 1D fully convolutional encoder--decoder & Translation-invariant, end-to-end & Large model; no explicit frequency separation \\
+& DeepFilter, Romero 2021 \cite{romero2021} & Multi-branch dilated residual CNN & Strong against baseline wander & Targeted at BW; blunts R-peaks under MSE \\
+\midrule
+\multirow{4}{2.0cm}{Hybrid wavelet + deep learning}
+& DW-CNN, Jin 2024 \cite{jin2024} & DWT/IDWT replace pooling and upsampling & Invertible multiresolution downsampling & Approximation and detail stacked indiscriminately \\
+& DW-SE, Nguyen 2026 \cite{nguyen2026dwse} & DWT with squeeze-and-excitation blocks & Channel recalibration & Asymmetric decomposition; slow on CPU \\
+& LiWave, Nguyen 2026 \cite{nguyen2026liwave} & Lightweight 1D wavelet-residual U-Net & Compact residual design & Judged by SNR/PRD only; no downstream test \\
+& \textbf{\HSL{} (ours)} & Symmetric Haar DWT/IDWT, \RSE{} blocks, filtered detail skips, mixed loss & Preserves QRS detail; CPU-efficient & Single-lead; synthetic NSTDB noise \\
+\midrule
+\multirow{3}{2.0cm}{Arrhythmia classification}
+& de Chazal 2004 \cite{dechazal2004} & Morphology and interval features with LDA & Defines the inter-patient DS1/DS2 protocol & Handcrafted features; limited S-class discrimination \\
+& Mond{\'e}jar-Guerra 2019 \cite{mondejar2019} & Wavelet and RR features with SVM ensemble & Local and global RR context & S-class +P limited to 49.70\% \\
+& \textbf{\RRN{} (ours)} & 1D ResNet, 6-D RR pathway, MLP or VQC head & End-to-end on denoised beats & Quantum head only simulated \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Traditional Filtering and Wavelet Thresholding}
+Early ECG enhancement relied on FIR/IIR filters, adaptive noise cancelers based on least mean squares (LMS), and recursive Bayesian estimation with extended Kalman filters, which model the ECG as a dynamical system and estimate its state from the noisy observation \cite{clifford2006,goldberger2000}. To cope with non-stationary biopotentials, the discrete and stationary wavelet transforms decompose the signal into scales, shrink the detail coefficients below a threshold, and reconstruct the waveform \cite{clifford2006}. Because the threshold is fixed in advance, it also removes genuine high-frequency content when the noise power is high, which produces notched QRS complexes and lost P waves.
+
+\subsection{Deep 1D Denoising Networks}
+Deep models learn the mapping from paired contaminated and clean segments \cite{vincent2008}. Xiong \emph{et al.} \cite{xiong2016} used a fully connected denoising autoencoder, whose dense layers ignore temporal locality. Chiang \emph{et al.} \cite{chiang2019} introduced a fully convolutional denoising autoencoder that shares filters across time and clearly outperformed Wiener and wavelet baselines. Romero \emph{et al.} \cite{romero2021} proposed DeepFilter, which stacks multi-scale dilated residual branches to enlarge the receptive field for baseline-wander removal. All three operate purely in the time domain, so a convolution has no explicit mechanism to separate noise from a QRS complex that occupies the same band.
+
+\subsection{Hybrid Wavelet--Deep Learning Networks}
+Hybrid designs place the DWT inside the network. Jin \emph{et al.} \cite{jin2024} replaced pooling with the DWT in DW-CNN so that downsampling becomes invertible, but they concatenate the approximation and detail coefficients along the channel axis without treating them differently. DW-SE \cite{nguyen2026dwse} adds squeeze-and-excitation blocks to recalibrate the wavelet feature channels, while LiWave \cite{nguyen2026liwave} shows that a wavelet-residual U-Net can be made compact. These models are optimized with squared error and evaluated with SNR-type metrics only, which motivates the explicit detail-subband filtering and the fiducial-aware loss used in \HSL{}.
+
+\subsection{Heartbeat Classification and Quantum Machine Learning}
+Heartbeat classification follows the ANSI/AAMI EC57 standard \cite{aami}. De Chazal \emph{et al.} \cite{dechazal2004} introduced the inter-patient DS1/DS2 protocol, which prevents patient-level leakage between training and testing, and Mond{\'e}jar-Guerra \emph{et al.} \cite{mondejar2019} showed that combining local and global RR-interval features is decisive for supraventricular ectopic beats. Variational quantum circuits (VQC) \cite{benedetti2019} perform classification in a Hilbert space with very few trainable parameters, and amplitude encoding stores an $N$-dimensional vector in $\log_2 N$ qubits \cite{pennylane2018}, but their training can suffer from barren plateaus \cite{mcclean2018}. We therefore pair a 6-qubit VQC with a classical residual bypass.

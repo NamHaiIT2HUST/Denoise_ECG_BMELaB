@@ -52,17 +52,17 @@ DS1 Validation & 3 records (116, 118, 223) & 6{,}511 & 170 & 598 & 7{,}279 \\
 \subsection{Training Hyperparameters}
 Models were implemented in PyTorch 2.4. In Stage~1, \HSL{} was trained with Adam ($\text{lr} = 10^{-3}$, batch size 16, 50 epochs, early stopping patience 10) on an NVIDIA RTX GPU. In Stage~2, \RRN{} was optimized using Adam ($\text{lr} = 10^{-3}$ for classical layers, $\text{lr} = 2 \times 10^{-4}$ for quantum circuit parameters, weight decay $10^{-4}$, batch size 64, early stopping patience 15). For edge latency benchmarks, single-thread forward inference was evaluated on a standard Intel Core CPU at batch size 1.
 
-\subsection{Evaluation Metrics}
-\paragraph*{Waveform Reconstruction Fidelity}
-With $x_0[n]$ representing the clean reference, $x[n]$ the contaminated input, and $\hat{y}[n]$ the denoised signal over segment length $L$:
+\subsection{Evaluation Protocol and Metrics}
+Evaluation is organized in two independent parts: Part~A measures the quality of the restored signal, and Part~B measures how well the downstream classifier detects arrhythmias on the restored beats.
+
+\paragraph*{Part A: Signal Quality}
+With $x_0[n]$ the clean reference, $x[n]$ the contaminated input, and $\hat{y}[n]$ the denoised signal over a segment of length $L$:
 \begin{align}
 \mathrm{RMSE} &= \sqrt{\frac{1}{L} \sum_{n=0}^{L-1} \big(x_0[n] - \hat{y}[n]\big)^2}, \\
 \mathrm{PRD}  &= 100 \times \frac{\sqrt{\sum_{n=0}^{L-1} (x_0[n] - \hat{y}[n])^2}}{\sqrt{\sum_{n=0}^{L-1} x_0^2[n]}}\ \ (\%), \\
 \Delta\mathrm{SNR} &= 10\log_{10}\frac{\sum x_0^2}{\sum (x_0 - \hat{y})^2} - 10\log_{10}\frac{\sum x_0^2}{\sum (x_0 - x)^2}\ \ (\mathrm{dB}).
 \end{align}
+Morphology is further assessed with NeuroKit2 \cite{makowski2021} through the R-peak amplitude error $e_R = |\hat{A}_R - A_R|$ (mV), the QRS duration deviation (ms), and the QT interval error (ms). Computational cost is reported as the parameter count and the single-thread CPU latency.
 
-\paragraph*{Clinical Morphological Fiducials (NeuroKit2 \cite{makowski2021})}
-Using the validated physiological library NeuroKit2, we quantify clinical landmark errors: R-peak amplitude error $e_R = |\hat{A}_R - A_R|$ (mV), QRS duration deviation $\Delta\mathrm{QRS}_{\mathrm{dur}}$ (ms), and QT interval error $\Delta\mathrm{QT}_{\mathrm{int}}$ (ms).
-
-\paragraph*{Classification Metrics}
-For each diagnostic class $c \in \{N, S, V\}$, we measure Sensitivity ($\mathrm{Se} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}}$), Positive Predictivity ($+\mathrm{P} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}}$), and $F_1\text{-score} = \frac{2 \cdot \mathrm{Se} \cdot {+\mathrm{P}}}{\mathrm{Se} + {+\mathrm{P}}}$, alongside overall Accuracy ($\mathrm{Acc}$) and Macro-averaged F1 ($\mathrm{Macro\text{-}F1}$).
+\paragraph*{Part B: Detection Capability}
+For each AAMI class $c \in \{N, S, V\}$, we report Sensitivity $\mathrm{Se} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}}$, Positive Predictivity $+\mathrm{P} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}}$, and $F_1 = \frac{2 \cdot \mathrm{Se} \cdot (+\mathrm{P})}{\mathrm{Se} + (+\mathrm{P})}$, together with the overall Accuracy and the Macro-F1, i.e., the mean of the three class $F_1$ values.
