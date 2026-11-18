@@ -1,0 +1,50 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Traditional Filtering and Wavelet Thresholding}
+Early research on ECG signal enhancement focused predominantly on digital finite/infinite impulse response (FIR/IIR) filters, adaptive noise cancelers based on least mean squares (LMS), and recursive Bayesian estimation (extended Kalman filters) \cite{clifford2006,goldberger2000}. To handle the non-stationary nature of biopotentials, the discrete wavelet transform (DWT) and stationary wavelet transform (SWT) gained widespread popularity due to their multiresolution properties \cite{clifford2006}. Classic wavelet thresholding operates by setting hard or soft thresholds on detailed wavelet coefficients. While efficient, static thresholding rules are incapable of adapting to dynamically varying noise distributions. When noise power is severe, thresholding attenuates genuine physiological high-frequency components, causing irreversible loss of low-amplitude P-waves or artificial notches in the QRS complex.
+
+\subsection{Deep Learning for 1D ECG Denoising}
+To circumvent manual parameter tuning, deep learning models learn nonlinear end-to-end mappings directly from paired contaminated and clean ECG segments \cite{vincent2008,chiang2019}. Chiang \emph{et al.} \cite{chiang2019} pioneered fully convolutional networks (FCN) for ECG enhancement, demonstrating marked improvements over traditional Wiener and wavelet filters. Xiong \emph{et al.} \cite{xiong2016} proposed a deep denoising autoencoder (DNN-DAN) to suppress muscle artifacts. Romero \emph{et al.} \cite{romero2021} developed DeepFilter, an advanced multi-branch dilated convolutional network targeting baseline wander removal. Despite their denoising capabilities, purely 1D time-domain networks struggle when artifacts have identical spectral bounds to genuine cardiac complexes, as standard temporal convolutions lack explicit frequency-band separation.
+
+\begin{table*}[!t]
+\caption{Taxonomic Comparison of Representative ECG Denoising and Downstream Analysis Frameworks}
+\label{tab:taxonomic_comparison}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llp{2.6cm}p{4.6cm}rp{5.2cm}@{}}
+\toprule
+Category & Author \& Year & Model / Method & Architecture / Core Mechanism & Complexity & Key Limitations \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{Traditional\\Filtering}} 
+& Thakor \emph{et al.} (1991) \cite{clifford2006} & Adaptive Filter (LMS) & Time-domain adaptive FIR cancellation & Very Low & Degrades during rapid heart-rate variations \\
+& Sameni \emph{et al.} (2007) \cite{clifford2006} & Extended Kalman Filter & Non-linear Bayesian dynamic modeling & Low & Requires accurate state-space covariance priors \\
+& Alfaouri \emph{et al.} (2008) \cite{clifford2006} & Wavelet Thresholding & Multiresolution DWT with soft thresholding & Very Low & Handcrafted threshold erases low-amplitude P/T waves \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{Deep 1D\\Learning}} 
+& Xiong \emph{et al.} (2016) \cite{xiong2016} & DNN-DAN & Fully connected deep denoising autoencoder & 230.7\,K & Coarse feature extraction; lacks temporal translation invariance \\
+& Chiang \emph{et al.} (2019) \cite{chiang2019} & FCN Autoencoder & 1D fully convolutional encoder-decoder & 738.9\,K & High parameter redundancy; prone to gradient vanishing \\
+& Romero \emph{et al.} (2021) \cite{romero2021} & DeepFilter & Multi-branch dilated residual CNN & 68.7\,K & Tailored strictly for BW; blunts sharp R-peaks under MSE \\
+\midrule
+\multirow{4}{*}{\shortstack[l]{Hybrid Wavelet\\Deep Learning}} 
+& Jin \emph{et al.} (2024) \cite{jin2024} & DW-CNN & Wavelet-based downsampling/upsampling & 333.8\,K & High complexity; stacks approximation/details indiscriminately \\
+& Nguyen \emph{et al.} (2026) \cite{nguyen2026dwse} & DW-SE & DWT with squeeze-and-excitation blocks & 140.4\,K & High latency on CPU; asymmetric decomposition \\
+& Nguyen \emph{et al.} (2026) \cite{nguyen2026liwave} & LiWave & 1D Wavelet-Residual lightweight U-Net & 82.1\,K & Evaluated solely on SNR/PRD; lacks downstream clinical validation \\
+& \textbf{Ours (Stage 1)} & \textbf{\HSL} & \textbf{Symmetric Haar DWT + ResSE + SE1D} & \textbf{75.1\,K} & \textbf{Comprehensive: +10.01\,dB $\Delta$SNR, 35.2\,ms latency, NeuroKit2 fiducials} \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{Downstream\\Arrhythmia\\Classification}} 
+& de Chazal \emph{et al.} (2004) \cite{dechazal2004} & Linear Discriminant & Morphological intervals + LDA classifier & Handcrafted & Low sensitivity on supraventricular ectopic beats (S-class: 76.0\%) \\
+& Mond{\'e}jar \emph{et al.} (2019) \cite{mondejar2019} & SVM Ensemble & Wavelet features + RR intervals + RBF-SVM & Classical & S-class precision (+P) capped at 49.70\%; high false alarm rate \\
+& \textbf{Ours (Stage 2)} & \textbf{\RRN} & \textbf{1D ResNet + 6D RR Pathway + MLP / VQC} & \textbf{37.5\,K / 30.9\,K (heads)} & \textbf{End-to-End: 96.43\% Acc, 0.8407 F1, S-class +P boosted to \best{72.97\%}} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+\subsection{Hybrid Wavelet-Deep Learning Networks}
+To merge multi-scale signal decomposition with feature learning, hybrid wavelet neural networks have recently gained traction. Jin \emph{et al.} \cite{jin2024} proposed DW-CNN, replacing pooling operations with discrete wavelet transforms to retain spatial-frequency boundaries. However, DW-CNN concatenates approximation and detail coefficients along channel dimensions without selective feature routing, resulting in substantial parameter overhead (333.8\,K parameters). Nguyen \emph{et al.} \cite{nguyen2026dwse} incorporated squeeze-and-excitation blocks into wavelet networks (DW-SE), while LiWave \cite{nguyen2026liwave} demonstrated that 1D wavelet-residual U-Nets can operate at ultra-lightweight scales (~82\,K parameters). Nonetheless, these models remain uncoupled from downstream clinical diagnosis and exhibit high-frequency detail loss when trained exclusively on mean squared errors.
+
+\subsection{Heartbeat Classification and Quantum Machine Learning}
+Automatic classification of cardiac arrhythmias according to the ANSI/AAMI EC57 standard \cite{aami} represents the primary clinical diagnostic endpoint following signal conditioning. The benchmark study by de Chazal \emph{et al.} \cite{dechazal2004} established the inter-patient DS1/DS2 evaluation protocol, preventing patient-level data leakage between training and testing sets. Recognizing that morphological features alone are insufficient to distinguish rare supraventricular ectopic beats (S-class), Mond{\'e}jar-Guerra \emph{et al.} \cite{mondejar2019} demonstrated that combining local and global RR-interval timing features is decisive.
+
+In parallel, Quantum Machine Learning (QML) has emerged as an innovative frontier for edge computing. Variational Quantum Circuits (VQC) \cite{benedetti2019} parameterize quantum gates to perform classification in Hilbert spaces using minimal parameter budgets. Amplitude encoding allows an $N$-dimensional vector to be represented within $\log_2(N)$ qubits \cite{pennylane2018}. However, quantum circuits frequently encounter barren plateaus during gradient descent \cite{mcclean2018}. In this work, we deploy a classical residual bypass alongside our 6-qubit VQC to guarantee numerical stability, providing one of the first rigorous empirical evaluations of hybrid quantum classifiers on real-world inter-patient ECG data. Table~\ref{tab:taxonomic_comparison} summarizes and positions our framework against existing state-of-the-art methodologies.
