@@ -1,0 +1,7 @@
+\begin{abstract}
+Wearable electrocardiogram (ECG) recordings are corrupted by baseline wander, muscle artifacts, and electrode motion, whose spectra overlap those of the P wave, QRS complex, and T wave. Deep denoisers trained with squared error tend to blunt R-peaks and weak waves, and they are rarely tested on whether the restored signal still supports arrhythmia diagnosis. We propose \HSL{}, a 75{,}133-parameter denoiser that embeds a two-level Haar DWT/IDWT in a symmetric residual network, refines the high-frequency detail subbands through dedicated skip blocks, and is trained with a mixed MSE--$L_1$ loss. The frozen denoiser feeds \RRN{}, a beat classifier that fuses a 1D ResNet morphology encoder with an RR-interval pathway and a classical or 6-qubit variational quantum head. On MIT-BIH with NSTDB noise, \HSL{} improves the SNR by 10.01\,dB (PRD 33.88\%), 0.37\,dB above DeepFilter, at 35.20\,ms per segment on a CPU. On the inter-patient DS2 test set (49{,}298 beats), the classical and hybrid-quantum ensembles reach 96.43\% / 0.8407 and 96.04\% / 0.8176 in accuracy / Macro-F1.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Electrocardiogram (ECG) denoising, discrete wavelet transform (DWT), squeeze-and-excitation, heartbeat classification, variational quantum circuit (VQC), inter-patient evaluation, wearable edge computing.
+\end{IEEEkeywords}

@@ -1,0 +1,68 @@
+\section{Experiments and Evaluation Setup}
+\label{sec:exp}
+
+\subsection{Datasets and Clinical Inter-Patient Split}
+\label{sec:data_split}
+The empirical validation relies on two internationally recognized PhysioNet benchmark databases:
+\begin{enumerate}
+    \item \textbf{MIT-BIH Arrhythmia Database (MITDB) \cite{moody2001}:} Contains 48 ambulatory two-lead recordings (30 minutes each, sampled at $f_s = 360$\,Hz) from 47 subjects. The modified limb lead II (MLII) is extracted. Following AAMI standards, four recordings containing paced rhythms (102, 104, 107, 217) are excluded, leaving 44 clinically valid records.
+    \item \textbf{MIT-BIH Noise Stress Test Database (NSTDB) \cite{moody1984}:} Provides clean baseline wander (BW), muscle artifact (MA), and electrode motion (EM) noise recordings acquired at 360\,Hz from healthy volunteers.
+\end{enumerate}
+
+\paragraph*{Clinical Inter-Patient Protocol (de Chazal DS1/DS2)}
+To prevent patient-specific data leakage, we enforce the gold-standard inter-patient division established by de Chazal \emph{et al.} \cite{dechazal2004}:
+\begin{itemize}
+    \item \textbf{Dataset 1 (DS1 - Development Set, 22 records):} Used exclusively for model parameter optimization. To guarantee strict reproducibility, records \texttt{116}, \texttt{118}, and \texttt{223} are fixed as the validation set ($7{,}279$ beats), while the remaining 19 records form the training set ($43{,}299$ beats).
+    \item \textbf{Dataset 2 (DS2 - Independent Test Set, 22 records):} Comprises \textbf{49{,}298 independent beats} from 22 entirely unseen patients, serving as the blind diagnostic test set for the classifier.
+\end{itemize}
+Table~\ref{tab:ds_split} details the exact beat distributions mapped to the AAMI EC57 diagnostic classes: Normal and Bundle Branch Block beats ($\mathbf{N}$), Supraventricular Ectopic beats ($\mathbf{S}$), and Ventricular Ectopic beats ($\mathbf{V}$).
+
+\paragraph*{Noise Protocol and Stage~1 Data Partition}
+For Stage~1, the clean MITDB recordings are partitioned at the record level into training, validation, and test subsets (approximately $71\%$, $19\%$, and $10\%$ of the records), so that no segment of a test record is used during training. This partition is defined independently of the DS1/DS2 protocol above, since the denoiser uses only the signal and no beat labels. Training and validation segments are contaminated at input SNRs of $\{-5,-3,-1,1,3,5\}$\,dB, whereas test segments use the wider range $\{-10,-7,-5,-3,0,1,3,5,7,10\}$\,dB over the seven BW/MA/EM combinations.
+
+For Stage~2, every 256-sample beat is contaminated with NSTDB noise according to the same noise model (Eq.~\eqref{eq:noise_model}). The SNR level and the noise combination are assigned cyclically across beats when the dataset is prepared and then kept fixed: DS1 beats (training and validation) use the training SNR set, and DS2 beats use the test SNR set. Consequently, all classification results are obtained on contaminated beats after denoising, and the \emph{No Denoise} configuration of the ablation study classifies the same contaminated beats directly.
+
+\begin{table}[!htbp]
+\caption{Beat Distributions Across the Inter-Patient DS1/DS2 Split (AAMI Classes N, S, V)}
+\label{tab:ds_split}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Partition & Records Included & N & S & V & Total \\
+\midrule
+DS1 Training & 19 records & 39{,}335 & 774 & 3{,}190 & 43{,}299 \\
+DS1 Validation & 3 records (116, 118, 223) & 6{,}511 & 170 & 598 & 7{,}279 \\
+\textbf{DS2 Test Set} & \textbf{22 unseen records} & \textbf{44{,}241} & \textbf{1{,}837} & \textbf{3{,}220} & \textbf{49{,}298} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Experimental Configurations and Baselines}
+\HSL{} is systematically evaluated against five prominent state-of-the-art ECG denoising baselines implemented under the identical data preparation and noise protocol:
+\begin{enumerate}
+    \item \textbf{DW-CNN (Jin \emph{et al.}, 2024 \cite{jin2024}):} Deep wavelet convolutional neural network replacing spatial pooling with DWT operations ($333.8$\,K parameters).
+    \item \textbf{DNN-DAN (Xiong \emph{et al.}, 2016 \cite{xiong2016}):} Deep neural network denoising autoencoder ($230.7$\,K parameters).
+    \item \textbf{FCN (Chiang \emph{et al.}, 2019 \cite{chiang2019}):} Fully convolutional denoising autoencoder ($738.9$\,K parameters).
+    \item \textbf{LiWave (Nguyen \emph{et al.}, 2026 \cite{nguyen2026liwave}):} Lightweight 1D wavelet-residual U-Net ($82.1$\,K parameters).
+    \item \textbf{DeepFilter (Romero \emph{et al.}, BSPC 2021 \cite{romero2021}):} Multi-branch dilated convolutional filter for baseline wander removal ($68.7$\,K parameters).
+\end{enumerate}
+
+\subsection{Training Hyperparameters}
+Models were implemented in PyTorch 2.4. In Stage~1, \HSL{} was trained with Adam ($\text{lr} = 10^{-3}$, batch size 16, 50 epochs, early stopping patience 10) on an NVIDIA RTX GPU. In Stage~2, \RRN{} was optimized using Adam ($\text{lr} = 10^{-3}$ for classical layers, $\text{lr} = 2 \times 10^{-4}$ for quantum circuit parameters, weight decay $10^{-4}$, batch size 64, early stopping patience 15). For edge latency benchmarks, single-thread forward inference was evaluated on a standard Intel Core CPU at batch size 1.
+
+\subsection{Evaluation Protocol and Metrics}
+Evaluation is organized in two independent parts: Part~A measures the quality of the restored signal, and Part~B measures how well the downstream classifier detects arrhythmias on the restored beats.
+
+\paragraph*{Part A: Signal Quality}
+With $x_0[n]$ the clean reference, $x[n]$ the contaminated input, and $\hat{y}[n]$ the denoised signal over a segment of length $L$:
+\begin{align}
+\mathrm{RMSE} &= \sqrt{\frac{1}{L} \sum_{n=0}^{L-1} \big(x_0[n] - \hat{y}[n]\big)^2}, \\
+\mathrm{PRD}  &= 100 \times \frac{\sqrt{\sum_{n=0}^{L-1} (x_0[n] - \hat{y}[n])^2}}{\sqrt{\sum_{n=0}^{L-1} x_0^2[n]}}\ \ (\%), \\
+\Delta\mathrm{SNR} &= 10\log_{10}\frac{\sum x_0^2}{\sum (x_0 - \hat{y})^2} - 10\log_{10}\frac{\sum x_0^2}{\sum (x_0 - x)^2}\ \ (\mathrm{dB}).
+\end{align}
+Morphology is further assessed with NeuroKit2 \cite{makowski2021} through the R-peak amplitude error $e_R = |\hat{A}_R - A_R|$ (mV), the QRS duration deviation (ms), and the QT interval error (ms). Computational cost is reported as the parameter count and the single-thread CPU latency.
+
+\paragraph*{Part B: Detection Capability}
+For each AAMI class $c \in \{N, S, V\}$, we report Sensitivity $\mathrm{Se} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}}$, Positive Predictivity $+\mathrm{P} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}}$, and $F_1 = \frac{2 \cdot \mathrm{Se} \cdot (+\mathrm{P})}{\mathrm{Se} + (+\mathrm{P})}$, together with the overall Accuracy and the Macro-F1, i.e., the mean of the three class $F_1$ values.

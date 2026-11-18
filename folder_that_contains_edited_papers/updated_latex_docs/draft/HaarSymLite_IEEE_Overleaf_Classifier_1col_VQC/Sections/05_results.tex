@@ -1,8 +1,10 @@
 \section{Results and Performance Analysis}
 \label{sec:results}
 
-\subsection{Denoising Performance Against State-of-the-Art Baselines}
-Table~\ref{tab:denoise_results} presents the quantitative denoising metrics evaluated across the test partitions. The proposed \HSL{} (Haar wavelet, $C=32, m=1$, unified \texttt{ResSEBlock1D}, mixed loss) attains an outstanding average $\Delta\mathrm{SNR}$ of \best{10.01\,dB}, a $\mathrm{PRD}$ of \best{33.88\%}, and a root-mean-square error ($\mathrm{RMSE}$) of \best{0.1028}. 
+\subsection{Part A: Signal Quality Evaluation}
+
+\subsubsection{Denoising Performance Against State-of-the-Art Baselines}
+Table~\ref{tab:denoise_results} presents the quantitative denoising metrics evaluated across the test partitions. The proposed \HSL{} (Haar wavelet, $C=32, m=1$, unified \RSE{}, mixed loss) attains an outstanding average $\Delta\mathrm{SNR}$ of \best{10.01\,dB}, a $\mathrm{PRD}$ of \best{33.88\%}, and a root-mean-square error ($\mathrm{RMSE}$) of \best{0.1028}. 
 
 \begin{table*}[!t]
 \caption{Quantitative Denoising Performance Across Benchmark Architectures and Loss Formulations}
@@ -29,9 +31,9 @@ DeepFilter \cite{romero2021} & Mixed Loss ($\alpha=0.8$) & 68{,}719 & 9.64 & 35.
 }
 \end{table*}
 
-Compared to the recent benchmark DeepFilter \cite{romero2021} trained under the identical mixed loss, \HSL{} achieves a substantial improvement of \best{+0.37\,dB} in $\Delta\mathrm{SNR}$ and reduces relative waveform distortion ($\mathrm{PRD}$) by \best{1.75\%} absolute (and $+0.80$\,dB over LiWave \cite{nguyen2026liwave}). Crucially, under the ablation where detail subbands $cD_1, cD_2$ bypass without filtering, performance degrades sharply to $8.81$\,dB due to high-frequency noise leakage, confirming the vital importance of the unified \texttt{ResSEBlock1D} skip filtering. When compared with the MSE-trained variant, the mixed-loss configuration yields higher fidelity and prevents R-peak amplitude blunting.
+Compared to the recent benchmark DeepFilter \cite{romero2021} trained under the identical mixed loss, \HSL{} achieves a substantial improvement of \best{+0.37\,dB} in $\Delta\mathrm{SNR}$ and reduces relative waveform distortion ($\mathrm{PRD}$) by \best{1.75\%} absolute (and $+0.80$\,dB over LiWave \cite{nguyen2026liwave}). Crucially, under the ablation where detail subbands $cD_1, cD_2$ bypass without filtering, performance degrades sharply to $8.81$\,dB due to high-frequency noise leakage, confirming the vital importance of the unified \RSE{} skip filtering. When compared with the MSE-trained variant, the mixed-loss configuration yields higher fidelity and prevents R-peak amplitude blunting.
 
-\subsection{Robustness Across Noise Types and Input SNR}
+\subsubsection{Robustness Across Noise Types and Input SNR}
 Fig.~\ref{fig:snr_prd_curves} displays $\Delta\mathrm{SNR}$ and $\mathrm{PRD}$ curves across input SNR levels from $-10$\,dB to $+10$\,dB. \HSL{} maintains consistent superiority across the entire input range. Fig.~\ref{fig:noise_breakdown} breaks down the $\Delta\mathrm{SNR}$ gain across all 7 physiological noise combinations. Under severe baseline wander (BW), \HSL{} reaches $14.1$\,dB $\Delta\mathrm{SNR}$ (gain of $+1.5$\,dB over DeepFilter). Under high-frequency muscle artifact (MA) and electrode motion (EM), \HSL{} consistently maintains a $1.2$ to $1.4$\,dB margin, demonstrating resilience against broad-spectrum physiological contamination.
 
 \begin{figure}[!htbp]
@@ -48,7 +50,7 @@ Fig.~\ref{fig:snr_prd_curves} displays $\Delta\mathrm{SNR}$ and $\mathrm{PRD}$ c
 \label{fig:noise_breakdown}
 \end{figure}
 
-\subsection{Qualitative Waveform Reconstruction and QRS Zoom}
+\subsubsection{Qualitative Waveform Reconstruction and QRS Zoom}
 Fig.~\ref{fig:waveform_comparison} illustrates a 4-second excerpt of MIT-BIH record 230 corrupted with combined BW and MA noise at $\mathrm{SNR} = -5$\,dB. DeepFilter eliminates baseline drift but visibly flattens low-amplitude T-waves. 
 
 \begin{figure}[!htbp]
@@ -67,7 +69,7 @@ Fig.~\ref{fig:waveform_comparison} illustrates a 4-second excerpt of MIT-BIH rec
 
 Fig.~\ref{fig:zoom_qrs} provides a magnified view of a single QRS complex ($0.71$\,s). The visual evidence reveals the intrinsic deficiency of pure MSE loss and standard dilated CNNs: because the R-peak contains the highest localized gradient, MSE optimization minimizes variance by clipping the sharp apex, causing peak attenuation of over $0.14$\,mV. In contrast, \HSL{} trained with mixed loss faithfully preserves the sharp apex and steep S-wave descent, ensuring pristine morphological fidelity.
 
-\subsection{Clinical Fiducial Fidelity via NeuroKit2}
+\subsubsection{Clinical Fiducial Fidelity via NeuroKit2}
 Fig.~\ref{fig:clinical_fiducials} and Table~\ref{tab:clinical_metrics} report clinical landmark errors measured via the standardized NeuroKit2 library \cite{makowski2021}. Contaminated signals exhibit severe R-peak amplitude error ($e_R = 0.384$\,mV), which is reduced to $0.142$\,mV by MSE-trained models. The proposed mixed-loss \HSL{} further lowers $e_R$ to only \best{0.048\,mV} (an almost 3-fold reduction over MSE). Crucially, QRS duration error is minimized to \best{5.2\,ms} (compared to $19.6$\,ms for MSE and $28.4$\,ms for raw noisy signals), while QT interval error is held to \best{8.7\,ms}. This prevents pathological false alarms for Long QT Syndrome or intraventricular conduction delays.
 
 \begin{figure}[!htbp]
@@ -94,7 +96,7 @@ QT Interval Error (ms) $\downarrow$ & 42.1 & 24.8 & \textbf{8.7} \\
 }
 \end{table}
 
-\subsection{Computational Complexity and Edge CPU Latency}
+\subsubsection{Computational Complexity and Edge CPU Latency}
 To verify feasibility for wearable deployment, models were evaluated on an edge-tier Intel Core CPU at batch size 1 (Table~\ref{tab:complexity_latency} and Fig.~\ref{fig:pareto_efficiency}). \HSL{} features only $75{,}133$ parameters ($0.287$\,MB in 32-bit floating point), requiring merely \best{35.20\,ms} per 8192-sample segment ($28.41$ segments/s throughput). Although it has slightly more parameters than DeepFilter ($68.7$\,K), \HSL{} reduces the per-segment latency by $16.4\%$ ($35.20$\,ms vs. $42.10$\,ms), equivalent to a $19.6\%$ higher throughput. This is consistent with the Haar DWT halving the temporal length of the low-frequency path processed by the deeper stages, which reduces the computation of the subsequent convolutions.
 
 \begin{table}[!htbp]
@@ -124,7 +126,9 @@ DeepFilter \cite{romero2021} & 68{,}719 & 0.262 & \second{42.10} & \second{23.75
 \label{fig:pareto_efficiency}
 \end{figure}
 
-\subsection{Downstream Arrhythmia Classification on DS2 (49,298 Beats)}
+\subsection{Part B: Detection Capability Evaluation}
+
+\subsubsection{Downstream Arrhythmia Classification on DS2 (49,298 Beats)}
 Table~\ref{tab:classification_results} reports the downstream diagnostic performance of \RRN{} across the 49{,}298 independent beats of the inter-patient DS2 test set. Over 5 independent runs, the classical MLP head reaches an average Macro-F1 of $0.8092 \pm 0.0210$, which the soft-voting ensemble boosts to \best{0.8407} with an overall Accuracy of \best{96.43\%}. The hybrid quantum head achieves an ensemble Macro-F1 of \second{0.8176} with an Accuracy of \second{96.04\%}.
 
 \begin{table}[!htbp]
@@ -158,7 +162,7 @@ Mond{\'e}jar \emph{et al.} \cite{mondejar2019} & 94.50 & 0.8120 & 0.6070 & \seco
 
 Fig.~\ref{fig:confusion_matrices} depicts the exact confusion matrices on DS2. For the classical ensemble, out of $44{,}241$ normal beats ($\mathbf{N}$), $43{,}369$ are correctly identified ($98.03\%$). In the challenging supraventricular class ($\mathbf{S}$), $1{,}142$ out of $1{,}837$ beats are accurately detected ($62.17\%$ sensitivity), achieving a positive predictivity ($+\mathrm{P}$) of \best{72.97\%}. This exceeds the value reported by Mond{\'e}jar-Guerra \emph{et al.} \cite{mondejar2019} ($+\mathrm{P} = 49.70\%$) by $23.27$ percentage points and previous architectures ($66.04\%$), although these figures originate from different experimental protocols. In the ventricular ectopic class ($\mathbf{V}$), $3{,}026$ out of $3{,}220$ beats are captured ($93.98\%$ sensitivity, $80.54\%$ precision, and an F1-score of $0.8674$).
 
-\subsection{Ablation Study: Denoising Impact on Arrhythmia Diagnosis}
+\subsubsection{Ablation Study: Denoising Impact on Arrhythmia Diagnosis}
 Fig.~\ref{fig:ablation_f1} and Table~\ref{tab:ablation_study} compare four end-to-end preprocessing conditions:
 \begin{enumerate}
     \item \textbf{Config 1 (No Denoise):} Classifying corrupted raw ECG limits classical ensemble Macro-F1 to $0.8050$.
@@ -192,7 +196,7 @@ ID & Upstream Denoiser & Loss Objective & Classical Mean & Classical Ens. & Hybr
 }
 \end{table*}
 
-\subsection{Latent Feature Space Visualizations via UMAP}
+\subsubsection{Latent Feature Space Visualizations via UMAP}
 To investigate how denoising and feature fusion facilitate clinical discrimination, Uniform Manifold Approximation and Projection (UMAP) was performed on latent representations. 
 
 \begin{figure*}[!t]

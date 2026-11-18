@@ -1,0 +1,66 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+\fi
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{bm}
+\usepackage{url}
+\usepackage[hidelinks,hypertexnames=false]{hyperref}
+\usepackage{dblfloatfix}
+\usepackage{placeins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,decorations.pathreplacing}
+
+\setlength{\emergencystretch}{1em}
+
+% Math and Model Macros
+\newcommand{\HSL}{\textit{HaarSymLite}}
+\newcommand{\RRN}{\textit{ResRR-Net}}
+\newcommand{\RSE}{\textit{ResSE}}
+\newcommand{\DWT}{\mathrm{DWT}}
+\newcommand{\IDWT}{\mathrm{IDWT}}
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\second}[1]{\underline{#1}}
+
+\begin{document}
+
+\title{HaarSymLite: Lightweight 1D Wavelet Residual Network for High-Fidelity ECG Denoising and Downstream Arrhythmia Classification}
+
+\author{Nguyen Dao Nam Hai, Dang Trung Khanh, Huy-Dung Han, and Loan Pham-Nguyen%
+\thanks{Nguyen Dao Nam Hai and Dang Trung Khanh are with the School of Information and Communication Technology and the School of Electrical and Electronic Engineering, Hanoi University of Science and Technology (HUST), Hanoi, Vietnam.}%
+\thanks{Huy-Dung Han and Loan Pham-Nguyen are with the School of Electrical and Electronic Engineering, Hanoi University of Science and Technology (HUST), Hanoi, Vietnam (e-mail: loan.phamnguyenthanh@hust.edu.vn).}%
+\thanks{This research was conducted at the SPARC Laboratory and Biomedical Electronics Laboratory (BME Lab), Hanoi University of Science and Technology (HUST).}%
+}
+
+% \markboth{IEEE Transactions on Biomedical Engineering / Biomedical Signal Processing and Control,~Vol.~XX, No.~X, October~2026}%
+% {Hai \MakeLowercase{\textit{et al.}}: HaarSymLite: Lightweight 1D Wavelet Residual Network for ECG Denoising and Classification}
+
+\maketitle
+
+% Modular Section Inputs
+\input{Sections/00_abstract}
+\input{Sections/01_introduction}
+\input{Sections/02_related_work}
+\input{Sections/03_methodology}
+\input{Sections/04_experiments}
+\input{Sections/05_results}
+\input{Sections/06_discussion}
+\input{Sections/07_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{References}
+
+\end{document}

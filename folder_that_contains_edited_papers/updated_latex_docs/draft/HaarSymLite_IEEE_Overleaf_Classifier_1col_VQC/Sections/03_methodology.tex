@@ -4,13 +4,9 @@
 \subsection{System Overview}
 The proposed framework operates in two distinct stages (Fig.~\ref{fig:pipeline}). In Stage~1, the denoiser \HSL{} is trained on 8192-sample segments in raw physical millivolt units ($\mathrm{mV}$) to reconstruct clean waveforms without distorting intrinsic signal distributions. In Stage~2, the weights of \HSL{} are frozen, and the model is utilized as an upstream signal purifier for downstream cardiac arrhythmia classification. Extracted 256-sample cardiac beats are normalized and fed into \RRN{}, which fuses morphological features with a 6-dimensional RR timing pathway.
 
-\subsection{Data Model and Physical Preprocessing}
+\subsection{Data Preparation and Noise Model}
 \label{sec:preproc}
-Continuous single-lead ECG recordings from the MIT-BIH Arrhythmia Database (sampled at $f_s = 360$\,Hz) are pre-filtered using a 4th-order zero-phase Butterworth bandpass filter ($0.67$--$100$\,Hz):
-\begin{equation}
-x_f[n] = \mathrm{filtfilt}\big(\mathrm{Butter}_4; [0.67, 100]\,\mathrm{Hz}\big)\{x_{\mathrm{raw}}[n]\}.
-\end{equation}
-The zero-phase forward-backward filtering attenuates DC drift and ultra-high frequency electrosurgical noise while preserving the temporal phase alignment of R-peaks. Signals are partitioned into segments of length $L = 8192$ samples ($22.75$\,s) with a $50\%$ overlap (hop size $H = 4096$). To remove corrupted flatlines or extreme sensor detachment, segments with energy outside the 5th to 95th percentiles are pruned.
+Single-lead MIT-BIH recordings ($f_s = 360$\,Hz) are first passed through a zero-phase Butterworth bandpass filter ($0.67$--$100$\,Hz), which removes baseline drift and high-frequency interference without shifting the R-peaks in time. The filtered signals are divided into segments of $L = 8192$ samples ($22.75$\,s) with $50\%$ overlap, and segments whose energy lies outside the 5th--95th percentile range are discarded to remove flatlines and sensor detachment. The remaining segments serve as the clean references $x_0[n]$.
 
 \paragraph*{Physiological Noise Model}
 To faithfully emulate clinical environments, realistic noise waveforms from the MIT-BIH Noise Stress Test Database (NSTDB) are superimposed onto clean segments $x_0[n]$:
@@ -145,6 +141,8 @@ where $\alpha = 0.8$. The $\mathcal{L}_{\mathrm{MSE}}$ term enforces high global
 \subsubsection{Beat Segmentation and Normalization}
 Following R-peak locations from reference annotations, individual beats are segmented into windows of $N_b = 256$ samples centered at the R-peak (approximately $0.71$\,s), encompassing the full P-QRS-T complex. The frozen, fully convolutional denoiser is applied directly to each beat in physical millivolts, and the denoised beat $x_d$ is then standardized by a per-beat Z-score normalization: $\tilde{x} = (x_d - \mu) / (\sigma + \epsilon)$, where $\mu$ and $\sigma$ are the mean and standard deviation of the beat and $\epsilon = 10^{-6}$.
 
+\textbf{Morphology encoder.} The normalized beat $X=\tilde{x}\in\mathbb{R}^{1\times 256}$ is encoded by a 1D ResNet with SE1D attention (Fig.~\ref{fig:classifier}). A stem ($\mathrm{Conv}_{7,1}^{1\to 16}$, BN, SiLU, max-pooling) produces $X_0$. Two BasicBlock1D residual blocks follow, each doubling the channels through a stride-2 convolution path and a projected shortcut, giving $X_1$ and $X_2$ with 64 channels. The SE1D module recalibrates the channels of $X_2$ through a $64\to 8\to 64$ pointwise-convolution bottleneck with sigmoid gating, giving $X_3$. Adaptive average pooling and flattening yield a 512D vector, which a fully connected layer ($512\to 128$) with GELU and dropout maps to the morphology embedding $X_4\in\mathbb{R}^{128}$.
+
 \subsubsection{Independent RR-Interval Pathway}
 Because supraventricular ectopic beats (S-class) are morphologically identical to normal beats in single-lead recordings, timing context is decisive. We extract six RR intervals:
 \begin{equation}
@@ -153,17 +151,17 @@ f_1 = \frac{\mathrm{pre\_RR}}{f_s}, \quad f_2 = \frac{\mathrm{post\_RR}}{f_s}, \
 \begin{equation}
 f_4 = \frac{\mathrm{post\_RR}}{\overline{RR}_{\mathrm{loc}}}, \quad f_5 = \frac{\mathrm{pre\_RR}}{\overline{RR}_{\mathrm{glob}}}, \quad f_6 = \frac{\mathrm{post\_RR}}{\overline{RR}_{\mathrm{glob}}},
 \end{equation}
-where $\overline{RR}_{\mathrm{loc}}$ is the local moving average of the RR intervals over the preceding beats, and $\overline{RR}_{\mathrm{glob}}$ is the global record average. The 6D vector passes through a dedicated pathway ($\mathrm{BatchNorm1D} \to \mathrm{Linear}(6 \to 32) \to \mathrm{GELU}$) and is concatenated with the 128D morphology vector from the 1D ResNet encoder, forming a $160\text{D}$ joint embedding $h \in \mathbb{R}^{160}$ (Fig.~\ref{fig:classifier}).
+where $\overline{RR}_{\mathrm{loc}}$ is the local moving average of the RR intervals over the preceding beats, and $\overline{RR}_{\mathrm{glob}}$ is the global record average. The six features form the rhythm input $R_0=[f_1,\dots,f_6]$, which passes through a dedicated pathway ($\mathrm{BatchNorm1D} \to \mathrm{Linear}(6 \to 32) \to \mathrm{GELU}$) to give $R_1\in\mathbb{R}^{32}$. Feature fusion concatenates it with the 128D morphology embedding $X_4$, forming a $160\text{D}$ joint embedding $h=[X_4;R_1] \in \mathbb{R}^{160}$, which is fed unchanged to both heads ($H_0=H_1=h$ in Fig.~\ref{fig:classifier}).
 
 \subsubsection{Dual Interchangeable Classification Heads}
-\RRN{} supports two interchangeable heads:
+\RRN{} supports two interchangeable heads, producing the class logits $\hat{Y}_0$ (classical) and $\hat{Y}_1$ (hybrid quantum) in Fig.~\ref{fig:classifier}:
 \begin{enumerate}
     \item \textbf{Classical MLP Head:} A 3-layer fully connected network ($160 \to 128 \to 128 \to 3$) with GELU activations ($37{,}507$ parameters).
     \item \textbf{Hybrid Quantum Head (VQC):} The 160D vector is compressed to 64D and mapped into the Hilbert state space of 6 qubits ($2^6 = 64$) via amplitude encoding:
     \begin{equation}
     |\psi_{\mathrm{in}}\rangle = \sum_{i=0}^{63} x_i |i\rangle, \quad \sum_{i=0}^{63} |x_i|^2 = 1.
     \end{equation}
-    A 2-layer parameterized quantum circuit (Fig.~\ref{fig:vqc_circuit}) applies single-qubit rotations $R_y(\theta), R_z(\phi)$ followed by a closed cyclic ring of CNOT entangling gates ($q_i \to q_{(i+1)\bmod 6}$), requiring only $2 \times 6 \times 2 = 24$ trainable quantum parameters. Twelve expectation values (6 single Pauli-Z $\langle Z_i \rangle$ and 6 nearest-neighbor correlations $\langle Z_i Z_{i+1} \rangle$) are measured and combined with a parallel 64D classical residual bypass:
+    The 6-qubit parameterized circuit (Fig.~\ref{fig:vqc_circuit}) applies two layers of single-qubit $R_y/R_z$ rotations and a cyclic CNOT ring, requiring only $2 \times 6 \times 2 = 24$ trainable quantum parameters. The twelve Pauli-Z observables ($6$ single-qubit $\langle Z_i \rangle$ and $6$ nearest-neighbor $\langle Z_i Z_{i+1} \rangle$) are measured and combined with a parallel 64D classical residual bypass:
     \begin{equation}
     \ell_{\mathrm{qnt}} = W_2 \cdot \mathrm{GELU}\Big(W_1 \big[\langle Z \rangle_{12}; \mathrm{GELU}(W_b h)\big]\Big),
     \end{equation}
@@ -171,7 +169,7 @@ where $\overline{RR}_{\mathrm{loc}}$ is the local moving average of the RR inter
 \end{enumerate}
 
 \subsubsection{Imbalance Handling and Soft-Voting Ensemble}
-To handle severe class imbalance between normal beats and rare arrhythmias, training samples are drawn using a \texttt{WeightedRandomSampler} with sampling weights $w_c \propto n_c^{-p}$ ($p=0.9$). For each configuration, 5 independent seeds (0 to 4) are trained and aggregated via a Soft-Voting Ensemble:
+To handle severe class imbalance between normal beats and rare arrhythmias, training samples are drawn using a weighted random sampler with sampling weights $w_c \propto n_c^{-p}$ ($p=0.9$). For each configuration, 5 independent seeds (0 to 4) are trained and aggregated via a Soft-Voting Ensemble:
 \begin{equation}
 \hat{p}_{\mathrm{ens}}(c \mid x) = \frac{1}{5}\sum_{s=0}^4 \mathrm{softmax}\big(\ell^{(s)}(x)\big)_c.
 \end{equation}
